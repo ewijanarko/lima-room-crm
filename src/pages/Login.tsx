@@ -44,6 +44,7 @@ export default function Login() {
       <Card className="w-full max-w-sm border-border bg-card">
         <CardHeader className="items-center space-y-4 pb-2">
           <img src={logo} alt="Lima Ruang" className="h-16 w-auto" />
+          <h1 className="text-3xl font-bold text-foreground tracking-wide">CRM</h1>
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">
             Transformasi & Integrasi
           </p>
