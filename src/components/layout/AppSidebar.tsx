@@ -33,12 +33,6 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4 flex items-center gap-3">
         <img src={logo} alt="Lima Ruang" className="h-32 w-32 shrink-0 object-contain" />
-        {!collapsed &&
-        <div className="flex flex-col min-w-0">
-            
-            <span className="text-[10px] tracking-[0.15em] uppercase text-sidebar-foreground truncate">CRM</span>
-          </div>
-        }
       </SidebarHeader>
 
       <SidebarContent>
