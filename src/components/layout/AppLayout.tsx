@@ -19,7 +19,7 @@ export function AppLayout() {
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">{user?.email}</span>
               <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 text-foreground" />
               </Button>
             </div>
           </header>
