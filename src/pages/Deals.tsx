@@ -17,8 +17,8 @@ import { formatIDR, daysSince, stageBorderColor, formatDateTime } from '@/lib/fo
 
 const STAGES = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'] as const;
 const STAGE_LABELS: Record<string, string> = {
-  lead: 'Lead', qualified: 'Qualified', proposal: 'Proposal',
-  negotiation: 'Negotiation', won: 'Won', lost: 'Lost',
+  lead: 'Prospek', qualified: 'Terkualifikasi', proposal: 'Proposal',
+  negotiation: 'Negosiasi', won: 'Menang', lost: 'Kalah',
 };
 
 export default function Deals() {
@@ -57,7 +57,7 @@ export default function Deals() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       setDialogOpen(false);
-      toast.success('Deal created');
+      toast.success('Deal berhasil dibuat');
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -82,7 +82,7 @@ export default function Deals() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Deals Pipeline</h1>
+        <h1 className="text-2xl font-bold">Pipeline Deal</h1>
         <div className="flex items-center gap-2">
           <div className="flex border border-border rounded-md">
             <Button variant={view === 'kanban' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('kanban')}>
@@ -94,10 +94,10 @@ export default function Deals() {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-1" /> New Deal</Button>
+              <Button><Plus className="h-4 w-4 mr-1" /> Deal Baru</Button>
             </DialogTrigger>
             <DialogContent className="bg-card border-border">
-              <DialogHeader><DialogTitle>New Deal</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Deal Baru</DialogTitle></DialogHeader>
               <DealForm clients={clients} onSubmit={d => createDeal.mutate(d)} loading={createDeal.isPending} />
             </DialogContent>
           </Dialog>
@@ -138,7 +138,7 @@ export default function Deals() {
                         {deal.product && <p className="text-xs text-muted-foreground">{deal.product}</p>}
                         <div className="flex items-center justify-between mt-2">
                           <span className="font-mono text-xs font-medium">{formatIDR(deal.value || 0)}</span>
-                          <span className="text-[10px] text-muted-foreground">{daysSince(deal.stage_changed_at)}d</span>
+                          <span className="text-[10px] text-muted-foreground">{daysSince(deal.stage_changed_at)} hari</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -153,12 +153,12 @@ export default function Deals() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 font-medium">Title</th>
-                <th className="text-left p-3 font-medium">Client</th>
-                <th className="text-left p-3 font-medium">Stage</th>
-                <th className="text-right p-3 font-medium">Value</th>
-                <th className="text-left p-3 font-medium">Product</th>
-                <th className="text-right p-3 font-medium">Days</th>
+                <th className="text-left p-3 font-medium">Judul</th>
+                <th className="text-left p-3 font-medium">Klien</th>
+                <th className="text-left p-3 font-medium">Tahap</th>
+                <th className="text-right p-3 font-medium">Nilai</th>
+                <th className="text-left p-3 font-medium">Produk</th>
+                <th className="text-right p-3 font-medium">Hari</th>
               </tr>
             </thead>
             <tbody>
@@ -169,7 +169,7 @@ export default function Deals() {
                   <td className="p-3"><Badge variant="secondary">{STAGE_LABELS[deal.stage]}</Badge></td>
                   <td className="p-3 text-right font-mono">{formatIDR(deal.value || 0)}</td>
                   <td className="p-3 text-muted-foreground">{deal.product || '—'}</td>
-                  <td className="p-3 text-right text-muted-foreground">{daysSince(deal.stage_changed_at)}d</td>
+                  <td className="p-3 text-right text-muted-foreground">{daysSince(deal.stage_changed_at)} hari</td>
                 </tr>
               ))}
             </tbody>
@@ -205,7 +205,7 @@ function DealSheet({ deal, onClose, onStageChange }: { deal: any; onClose: () =>
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deal-comms', deal.id] });
       setCommDialog(false);
-      toast.success('Communication logged');
+      toast.success('Komunikasi berhasil dicatat');
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -220,7 +220,7 @@ function DealSheet({ deal, onClose, onStageChange }: { deal: any; onClose: () =>
         </SheetHeader>
         <div className="mt-4 space-y-4">
           <div className="space-y-2">
-            <Label>Stage</Label>
+            <Label>Tahap</Label>
             <Select value={deal.stage} onValueChange={v => onStageChange(deal.id, v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -231,43 +231,43 @@ function DealSheet({ deal, onClose, onStageChange }: { deal: any; onClose: () =>
 
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-muted-foreground">Value</p>
+              <p className="text-muted-foreground">Nilai</p>
               <p className="font-mono font-medium">{formatIDR(deal.value || 0)}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Client</p>
+              <p className="text-muted-foreground">Klien</p>
               <p className="font-medium">{deal.clients?.company_name}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Product</p>
+              <p className="text-muted-foreground">Produk</p>
               <p>{deal.product || '—'}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Partner Deal</p>
-              <p>{deal.is_partner_deal ? 'Yes' : 'No'}</p>
+              <p className="text-muted-foreground">Deal Partner</p>
+              <p>{deal.is_partner_deal ? 'Ya' : 'Tidak'}</p>
             </div>
           </div>
 
           <Tabs defaultValue="comms">
             <TabsList className="w-full">
-              <TabsTrigger value="comms" className="flex-1">Communications</TabsTrigger>
+              <TabsTrigger value="comms" className="flex-1">Komunikasi</TabsTrigger>
             </TabsList>
             <TabsContent value="comms" className="space-y-3 mt-3">
               <Dialog open={commDialog} onOpenChange={setCommDialog}>
-                <DialogTrigger asChild><Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" />Log</Button></DialogTrigger>
+                <DialogTrigger asChild><Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" />Catat</Button></DialogTrigger>
                 <DialogContent className="bg-card border-border">
-                  <DialogHeader><DialogTitle>Log Communication</DialogTitle></DialogHeader>
+                  <DialogHeader><DialogTitle>Catat Komunikasi</DialogTitle></DialogHeader>
                   <DealCommForm onSubmit={d => addComm.mutate(d)} loading={addComm.isPending} />
                 </DialogContent>
               </Dialog>
               {comms.map((c: any) => (
                 <div key={c.id} className="p-3 rounded-md bg-muted/50 text-sm">
-                  <p className="font-medium">{c.subject || 'No subject'}</p>
+                  <p className="font-medium">{c.subject || 'Tanpa subjek'}</p>
                   {c.summary && <p className="text-xs text-muted-foreground mt-1">{c.summary}</p>}
-                  <p className="text-xs text-muted-foreground mt-1">{c.type} · {c.direction} · {formatDateTime(c.communication_date)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{c.type} · {c.direction === 'outbound' ? 'keluar' : 'masuk'} · {formatDateTime(c.communication_date)}</p>
                 </div>
               ))}
-              {comms.length === 0 && <p className="text-sm text-muted-foreground">No communications yet.</p>}
+              {comms.length === 0 && <p className="text-sm text-muted-foreground">Belum ada komunikasi.</p>}
             </TabsContent>
           </Tabs>
         </div>
@@ -281,11 +281,11 @@ function DealForm({ clients, onSubmit, loading }: { clients: any[]; onSubmit: (d
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
-      <div className="space-y-2"><Label>Title *</Label><Input value={form.title} onChange={e => set('title', e.target.value)} required /></div>
+      <div className="space-y-2"><Label>Judul *</Label><Input value={form.title} onChange={e => set('title', e.target.value)} required /></div>
       <div className="space-y-2">
-        <Label>Client *</Label>
+        <Label>Klien *</Label>
         <Select value={form.client_id} onValueChange={v => set('client_id', v)}>
-          <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Pilih klien" /></SelectTrigger>
           <SelectContent>
             {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
           </SelectContent>
@@ -293,15 +293,15 @@ function DealForm({ clients, onSubmit, loading }: { clients: any[]; onSubmit: (d
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Value (IDR)</Label>
+          <Label>Nilai (IDR)</Label>
           <Input type="number" value={form.value} onChange={e => set('value', parseInt(e.target.value) || 0)} />
         </div>
         <div className="space-y-2">
-          <Label>Product</Label>
+          <Label>Produk</Label>
           <Input value={form.product} onChange={e => set('product', e.target.value)} />
         </div>
       </div>
-      <Button type="submit" className="w-full" disabled={loading || !form.client_id}>{loading ? 'Creating...' : 'Create Deal'}</Button>
+      <Button type="submit" className="w-full" disabled={loading || !form.client_id}>{loading ? 'Membuat...' : 'Buat Deal'}</Button>
     </form>
   );
 }
@@ -313,32 +313,32 @@ function DealCommForm({ onSubmit, loading }: { onSubmit: (d: any) => void; loadi
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Type</Label>
+          <Label>Tipe</Label>
           <Select value={form.type} onValueChange={v => set('type', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="call">Call</SelectItem>
+              <SelectItem value="call">Telepon</SelectItem>
               <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="meeting">Meeting</SelectItem>
+              <SelectItem value="meeting">Rapat</SelectItem>
               <SelectItem value="whatsapp">WhatsApp</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="other">Lainnya</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Direction</Label>
+          <Label>Arah</Label>
           <Select value={form.direction} onValueChange={v => set('direction', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="outbound">Outbound</SelectItem>
-              <SelectItem value="inbound">Inbound</SelectItem>
+              <SelectItem value="outbound">Keluar</SelectItem>
+              <SelectItem value="inbound">Masuk</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
-      <div className="space-y-2"><Label>Subject</Label><Input value={form.subject} onChange={e => set('subject', e.target.value)} /></div>
-      <div className="space-y-2"><Label>Summary</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
-      <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Logging...' : 'Log Communication'}</Button>
+      <div className="space-y-2"><Label>Subjek</Label><Input value={form.subject} onChange={e => set('subject', e.target.value)} /></div>
+      <div className="space-y-2"><Label>Ringkasan</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
+      <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Mencatat...' : 'Catat Komunikasi'}</Button>
     </form>
   );
 }

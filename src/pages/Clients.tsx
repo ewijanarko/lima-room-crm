@@ -23,6 +23,13 @@ const STATUS_COLORS: Record<string, string> = {
   churned: 'bg-destructive text-destructive-foreground',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Aktif',
+  prospect: 'Prospek',
+  inactive: 'Tidak Aktif',
+  churned: 'Berhenti',
+};
+
 export default function Clients() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -47,7 +54,7 @@ export default function Clients() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       setDialogOpen(false);
-      toast.success('Client created');
+      toast.success('Klien berhasil dibuat');
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -62,13 +69,13 @@ export default function Clients() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Clients</h1>
+        <h1 className="text-2xl font-bold">Klien</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-1" /> Add Client</Button>
+            <Button><Plus className="h-4 w-4 mr-1" /> Tambah Klien</Button>
           </DialogTrigger>
           <DialogContent className="bg-card border-border">
-            <DialogHeader><DialogTitle>New Client</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Klien Baru</DialogTitle></DialogHeader>
             <ClientForm onSubmit={(data) => createClient.mutate(data)} loading={createClient.isPending} />
           </DialogContent>
         </Dialog>
@@ -77,16 +84,16 @@ export default function Clients() {
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search clients..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Cari klien..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="prospect">Prospect</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="churned">Churned</SelectItem>
+            <SelectItem value="all">Semua Status</SelectItem>
+            <SelectItem value="active">Aktif</SelectItem>
+            <SelectItem value="prospect">Prospek</SelectItem>
+            <SelectItem value="inactive">Tidak Aktif</SelectItem>
+            <SelectItem value="churned">Berhenti</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -95,18 +102,18 @@ export default function Clients() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Company</TableHead>
-              <TableHead>Industry</TableHead>
+              <TableHead>Perusahaan</TableHead>
+              <TableHead>Industri</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>City</TableHead>
+              <TableHead>Kota</TableHead>
               <TableHead>Email</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Memuat...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No clients found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Klien tidak ditemukan</TableCell></TableRow>
             ) : (
               filtered.map(client => (
                 <TableRow key={client.id} className="cursor-pointer hover:bg-muted/50">
@@ -117,7 +124,7 @@ export default function Clients() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{client.industry || '—'}</TableCell>
                   <TableCell>
-                    <Badge className={STATUS_COLORS[client.status] || ''}>{client.status}</Badge>
+                    <Badge className={STATUS_COLORS[client.status] || ''}>{STATUS_LABELS[client.status] || client.status}</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{client.city || '—'}</TableCell>
                   <TableCell className="text-muted-foreground">{client.email || '—'}</TableCell>
@@ -141,16 +148,16 @@ function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; load
       className="space-y-4"
     >
       <div className="space-y-2">
-        <Label>Company Name *</Label>
+        <Label>Nama Perusahaan *</Label>
         <Input value={form.company_name} onChange={e => set('company_name', e.target.value)} required />
       </div>
       <div className="space-y-2">
-        <Label>Contact Name</Label>
+        <Label>Nama Kontak</Label>
         <Input value={form.contact_name} onChange={e => set('contact_name', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Industry</Label>
+          <Label>Industri</Label>
           <Input value={form.industry} onChange={e => set('industry', e.target.value)} />
         </div>
         <div className="space-y-2">
@@ -158,25 +165,25 @@ function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; load
           <Select value={form.status} onValueChange={v => set('status', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="prospect">Prospect</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="prospect">Prospek</SelectItem>
+              <SelectItem value="active">Aktif</SelectItem>
+              <SelectItem value="inactive">Tidak Aktif</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Country</Label>
+          <Label>Negara</Label>
           <Input value={form.country} onChange={e => set('country', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>City</Label>
+          <Label>Kota</Label>
           <Input value={form.city} onChange={e => set('city', e.target.value)} />
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Full Address</Label>
+        <Label>Alamat Lengkap</Label>
         <Input value={form.address} onChange={e => set('address', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -185,12 +192,12 @@ function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; load
           <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Phone</Label>
+          <Label>Telepon</Label>
           <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
         </div>
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Creating...' : 'Create Client'}
+        {loading ? 'Membuat...' : 'Buat Klien'}
       </Button>
     </form>
   );
