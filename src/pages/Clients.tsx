@@ -132,7 +132,7 @@ export default function Clients() {
 }
 
 function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; loading: boolean }) {
-  const [form, setForm] = useState({ company_name: '', industry: '', status: 'prospect' as const, city: '', email: '', phone: '', address: '' });
+  const [form, setForm] = useState({ company_name: '', contact_name: '', industry: '', status: 'prospect' as const, city: '', country: '', email: '', phone: '', address: '' });
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
   return (
@@ -143,6 +143,10 @@ function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; load
       <div className="space-y-2">
         <Label>Company Name *</Label>
         <Input value={form.company_name} onChange={e => set('company_name', e.target.value)} required />
+      </div>
+      <div className="space-y-2">
+        <Label>Contact Name</Label>
+        <Input value={form.contact_name} onChange={e => set('contact_name', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
@@ -163,17 +167,27 @@ function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; load
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
+          <Label>Country</Label>
+          <Input value={form.country} onChange={e => set('country', e.target.value)} />
+        </div>
+        <div className="space-y-2">
           <Label>City</Label>
           <Input value={form.city} onChange={e => set('city', e.target.value)} />
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Full Address</Label>
+        <Input value={form.address} onChange={e => set('address', e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label>Email</Label>
           <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} />
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Phone</Label>
-        <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
+        <div className="space-y-2">
+          <Label>Phone</Label>
+          <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
+        </div>
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? 'Creating...' : 'Create Client'}
