@@ -103,10 +103,10 @@ export default function Login() {
                 {isSignUp ? 'Sign in' : 'Sign up'}
               </button>
             </p>
+            <p className="text-center text-xs text-muted-foreground mt-4">@2026 EW</p>
           </form>
         </CardContent>
       </Card>
-      <p className="mt-6 text-center text-xs text-muted-foreground">@2026 EW</p>
     </div>
   );
 }
