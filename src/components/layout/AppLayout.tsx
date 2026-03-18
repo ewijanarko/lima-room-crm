@@ -15,6 +15,7 @@ export function AppLayout() {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 shrink-0">
             <SidebarTrigger />
+            <span className="absolute left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">CRM</span>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">{user?.email}</span>
               <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
