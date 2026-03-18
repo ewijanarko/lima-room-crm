@@ -18,6 +18,21 @@ export default function Login() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(err.message || 'Google sign-in failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   if (session) return <Navigate to="/dashboard" replace />;
 
