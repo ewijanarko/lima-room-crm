@@ -106,6 +106,7 @@ export default function Login() {
           </form>
         </CardContent>
       </Card>
+      <p className="mt-6 text-center text-xs text-muted-foreground">@2026 EW</p>
     </div>
   );
 }
