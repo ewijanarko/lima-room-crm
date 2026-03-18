@@ -32,7 +32,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4 flex items-center gap-3">
-        <img src={logo} alt="Lima Ruang" className="h-8 w-8 shrink-0 object-contain" />
+        <img src={logo} alt="Lima Ruang" className="h-32 w-32 shrink-0 object-contain" />
         {!collapsed && (
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-semibold text-sidebar-accent-foreground truncate">Lima Ruang</span>
