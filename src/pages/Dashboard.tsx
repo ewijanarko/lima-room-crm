@@ -6,12 +6,12 @@ import { Building2, Target, TrendingUp, DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const STAGE_LABELS: Record<string, string> = {
-  lead: 'Lead',
-  qualified: 'Qualified',
+  lead: 'Prospek',
+  qualified: 'Terkualifikasi',
   proposal: 'Proposal',
-  negotiation: 'Negotiation',
-  won: 'Won',
-  lost: 'Lost',
+  negotiation: 'Negosiasi',
+  won: 'Menang',
+  lost: 'Kalah',
 };
 
 const STAGE_COLORS: Record<string, string> = {
@@ -65,15 +65,15 @@ export default function Dashboard() {
   }));
 
   const kpis = [
-    { label: 'Revenue (Won)', value: formatIDR(wonValue), icon: DollarSign, color: 'text-accent' },
-    { label: 'Pipeline Value', value: formatIDR(pipelineValue), icon: TrendingUp, color: 'text-primary' },
-    { label: 'Active Clients', value: clients?.toString() || '0', icon: Building2, color: 'text-gold' },
-    { label: 'Open Deals', value: openDeals.length.toString(), icon: Target, color: 'text-primary' },
+    { label: 'Pendapatan (Menang)', value: formatIDR(wonValue), icon: DollarSign, color: 'text-accent' },
+    { label: 'Nilai Pipeline', value: formatIDR(pipelineValue), icon: TrendingUp, color: 'text-primary' },
+    { label: 'Klien Aktif', value: clients?.toString() || '0', icon: Building2, color: 'text-gold' },
+    { label: 'Deal Terbuka', value: openDeals.length.toString(), icon: Target, color: 'text-primary' },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-black dark:text-black">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-black dark:text-black">Dasbor</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
@@ -94,7 +94,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-base">Deal Stage Funnel</CardTitle>
+            <CardTitle className="text-base">Corong Tahap Deal</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -104,8 +104,8 @@ export default function Dashboard() {
                 <Tooltip
                   contentStyle={{ background: 'hsl(222,25%,14%)', border: '1px solid hsl(222,20%,20%)', borderRadius: 8, color: 'hsl(220,15%,90%)' }}
                   formatter={(val: number, _name: string, entry: any) => [
-                    `${val} deals (${formatIDR(entry.payload.value)})`,
-                    'Count',
+                    `${val} deal (${formatIDR(entry.payload.value)})`,
+                    'Jumlah',
                   ]}
                 />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]}>
@@ -120,7 +120,7 @@ export default function Dashboard() {
 
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-base">Recent Communications</CardTitle>
+            <CardTitle className="text-base">Komunikasi Terbaru</CardTitle>
           </CardHeader>
           <CardContent>
             {recentComms && recentComms.length > 0 ? (
@@ -129,7 +129,7 @@ export default function Dashboard() {
                   <div key={comm.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/50">
                     <MessageIcon type={comm.type} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{comm.subject || 'No subject'}</p>
+                      <p className="text-sm font-medium truncate">{comm.subject || 'Tanpa subjek'}</p>
                       <p className="text-xs text-muted-foreground">
                         {comm.clients?.company_name} · {new Date(comm.communication_date).toLocaleDateString('id-ID')}
                       </p>
@@ -138,7 +138,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No communications logged yet.</p>
+              <p className="text-sm text-muted-foreground">Belum ada komunikasi yang dicatat.</p>
             )}
           </CardContent>
         </Card>

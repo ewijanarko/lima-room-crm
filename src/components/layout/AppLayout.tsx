@@ -18,7 +18,7 @@ export function AppLayout() {
             <span className="absolute left-1/2 -translate-x-1/2 text-lg tracking-[0.2em] uppercase text-muted-foreground font-bold">CRM</span>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">{user?.email}</span>
-              <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+              <Button variant="ghost" size="icon" onClick={signOut} title="Keluar">
                 <LogOut className="h-4 w-4 text-foreground" />
               </Button>
             </div>

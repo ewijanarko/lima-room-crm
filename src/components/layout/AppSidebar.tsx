@@ -15,15 +15,13 @@ import { LayoutDashboard, Building2, Target, MessageSquare, Calendar, Settings }
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
 
 const mainNav = [
-{ title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-{ title: 'Clients', url: '/clients', icon: Building2 },
-{ title: 'Deals', url: '/deals', icon: Target }];
-
+{ title: 'Dasbor', url: '/dashboard', icon: LayoutDashboard },
+{ title: 'Klien', url: '/clients', icon: Building2 },
+{ title: 'Deal', url: '/deals', icon: Target }];
 
 const secondaryNav = [
-{ title: 'Meetings', url: '#', icon: Calendar, disabled: true },
-{ title: 'Settings', url: '#', icon: Settings, disabled: true }];
-
+{ title: 'Rapat', url: '#', icon: Calendar, disabled: true },
+{ title: 'Pengaturan', url: '#', icon: Settings, disabled: true }];
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -37,7 +35,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel>Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) =>
@@ -47,7 +45,6 @@ export function AppSidebar() {
                     to={item.url}
                     className="hover:bg-sidebar-accent"
                     activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                    
                       <item.icon className="h-4 w-4 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -59,7 +56,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Coming Soon</SidebarGroupLabel>
+          <SidebarGroupLabel>Segera Hadir</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryNav.map((item) =>
@@ -75,5 +72,4 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>);
-
 }

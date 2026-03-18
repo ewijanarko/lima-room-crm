@@ -15,6 +15,13 @@ import { ArrowLeft, Plus, User, Phone, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatIDR, formatDateTime } from '@/lib/format';
 
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Aktif',
+  prospect: 'Prospek',
+  inactive: 'Tidak Aktif',
+  churned: 'Berhenti',
+};
+
 export default function ClientDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -61,7 +68,7 @@ export default function ClientDetail() {
       const { error } = await supabase.from('contacts').insert({ ...form, client_id: id });
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['contacts', id] }); setContactDialog(false); toast.success('Contact added'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['contacts', id] }); setContactDialog(false); toast.success('Kontak berhasil ditambahkan'); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -70,12 +77,12 @@ export default function ClientDetail() {
       const { error } = await supabase.from('communications').insert({ ...form, client_id: id, logged_by: user?.id });
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['client-comms', id] }); setCommDialog(false); toast.success('Communication logged'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['client-comms', id] }); setCommDialog(false); toast.success('Komunikasi berhasil dicatat'); },
     onError: (e: any) => toast.error(e.message),
   });
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-  if (!client) return <p className="text-muted-foreground">Client not found</p>;
+  if (!client) return <p className="text-muted-foreground">Klien tidak ditemukan</p>;
 
   return (
     <div className="space-y-6">
@@ -84,7 +91,7 @@ export default function ClientDetail() {
         <div>
           <h1 className="text-2xl font-bold">{client.company_name}</h1>
           <div className="flex items-center gap-2 mt-1">
-            <Badge>{client.status}</Badge>
+            <Badge>{STATUS_LABELS[client.status] || client.status}</Badge>
             {client.industry && <span className="text-sm text-muted-foreground">{client.industry}</span>}
           </div>
         </div>
@@ -92,16 +99,16 @@ export default function ClientDetail() {
 
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="contacts">Contacts ({contacts.length})</TabsTrigger>
-          <TabsTrigger value="deals">Deals ({deals.length})</TabsTrigger>
-          <TabsTrigger value="comms">Communications ({comms.length})</TabsTrigger>
+          <TabsTrigger value="overview">Ringkasan</TabsTrigger>
+          <TabsTrigger value="contacts">Kontak ({contacts.length})</TabsTrigger>
+          <TabsTrigger value="deals">Deal ({deals.length})</TabsTrigger>
+          <TabsTrigger value="comms">Komunikasi ({comms.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-card border-border">
-              <CardHeader><CardTitle className="text-base">Company Details</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Detail Perusahaan</CardTitle></CardHeader>
               <CardContent className="space-y-3 text-sm">
                 {client.email && <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" />{client.email}</div>}
                 {client.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" />{client.phone}</div>}
@@ -111,12 +118,12 @@ export default function ClientDetail() {
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
-              <CardHeader><CardTitle className="text-base">Quick Stats</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Statistik Singkat</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <p>Total Deals: <span className="font-mono font-medium">{deals.length}</span></p>
-                <p>Total Value: <span className="font-mono font-medium">{formatIDR(deals.reduce((s, d) => s + (d.value || 0), 0))}</span></p>
-                <p>Won: <span className="font-mono font-medium">{formatIDR(deals.filter(d => d.stage === 'won').reduce((s, d) => s + (d.value || 0), 0))}</span></p>
-                <p>Communications: <span className="font-mono font-medium">{comms.length}</span></p>
+                <p>Total Deal: <span className="font-mono font-medium">{deals.length}</span></p>
+                <p>Total Nilai: <span className="font-mono font-medium">{formatIDR(deals.reduce((s, d) => s + (d.value || 0), 0))}</span></p>
+                <p>Menang: <span className="font-mono font-medium">{formatIDR(deals.filter(d => d.stage === 'won').reduce((s, d) => s + (d.value || 0), 0))}</span></p>
+                <p>Komunikasi: <span className="font-mono font-medium">{comms.length}</span></p>
               </CardContent>
             </Card>
           </div>
@@ -124,9 +131,9 @@ export default function ClientDetail() {
 
         <TabsContent value="contacts" className="mt-4 space-y-4">
           <Dialog open={contactDialog} onOpenChange={setContactDialog}>
-            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Add Contact</Button></DialogTrigger>
+            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Tambah Kontak</Button></DialogTrigger>
             <DialogContent className="bg-card border-border">
-              <DialogHeader><DialogTitle>New Contact</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Kontak Baru</DialogTitle></DialogHeader>
               <ContactForm onSubmit={d => addContact.mutate(d)} loading={addContact.isPending} />
             </DialogContent>
           </Dialog>
@@ -138,7 +145,7 @@ export default function ClientDetail() {
                     <User className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-sm">{c.name} {c.is_primary && <Badge variant="secondary" className="ml-1 text-[10px]">Primary</Badge>}</p>
+                    <p className="font-medium text-sm">{c.name} {c.is_primary && <Badge variant="secondary" className="ml-1 text-[10px]">Utama</Badge>}</p>
                     {c.position && <p className="text-xs text-muted-foreground">{c.position}</p>}
                     {c.email && <p className="text-xs text-muted-foreground">{c.email}</p>}
                     {c.phone && <p className="text-xs text-muted-foreground">{c.phone}</p>}
@@ -146,7 +153,7 @@ export default function ClientDetail() {
                 </CardContent>
               </Card>
             ))}
-            {contacts.length === 0 && <p className="text-sm text-muted-foreground col-span-2">No contacts yet.</p>}
+            {contacts.length === 0 && <p className="text-sm text-muted-foreground col-span-2">Belum ada kontak.</p>}
           </div>
         </TabsContent>
 
@@ -158,7 +165,7 @@ export default function ClientDetail() {
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{d.title}</p>
-                      <p className="text-xs text-muted-foreground">{d.product || 'No product'}</p>
+                      <p className="text-xs text-muted-foreground">{d.product || 'Tanpa produk'}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-mono text-sm font-medium">{formatIDR(d.value || 0)}</p>
@@ -168,15 +175,15 @@ export default function ClientDetail() {
                 </Card>
               </Link>
             ))}
-            {deals.length === 0 && <p className="text-sm text-muted-foreground">No deals yet.</p>}
+            {deals.length === 0 && <p className="text-sm text-muted-foreground">Belum ada deal.</p>}
           </div>
         </TabsContent>
 
         <TabsContent value="comms" className="mt-4 space-y-4">
           <Dialog open={commDialog} onOpenChange={setCommDialog}>
-            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Log Communication</Button></DialogTrigger>
+            <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4 mr-1" />Catat Komunikasi</Button></DialogTrigger>
             <DialogContent className="bg-card border-border">
-              <DialogHeader><DialogTitle>Log Communication</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>Catat Komunikasi</DialogTitle></DialogHeader>
               <CommForm onSubmit={d => addComm.mutate(d)} loading={addComm.isPending} />
             </DialogContent>
           </Dialog>
@@ -185,15 +192,15 @@ export default function ClientDetail() {
               <div key={c.id} className="flex gap-3 p-3 rounded-md bg-muted/50">
                 <span className="text-lg">{({ call: '📞', email: '✉️', meeting: '🤝', whatsapp: '💬', other: '📝' } as any)[c.type] || '📝'}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{c.subject || 'No subject'}</p>
+                  <p className="text-sm font-medium">{c.subject || 'Tanpa subjek'}</p>
                   {c.summary && <p className="text-xs text-muted-foreground mt-1">{c.summary}</p>}
                   <p className="text-xs text-muted-foreground mt-1">
-                    {c.direction} · {formatDateTime(c.communication_date)}
+                    {c.direction === 'outbound' ? 'keluar' : 'masuk'} · {formatDateTime(c.communication_date)}
                   </p>
                 </div>
               </div>
             ))}
-            {comms.length === 0 && <p className="text-sm text-muted-foreground">No communications logged yet.</p>}
+            {comms.length === 0 && <p className="text-sm text-muted-foreground">Belum ada komunikasi yang dicatat.</p>}
           </div>
         </TabsContent>
       </Tabs>
@@ -206,13 +213,13 @@ function ContactForm({ onSubmit, loading }: { onSubmit: (d: any) => void; loadin
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
-      <div className="space-y-2"><Label>Name *</Label><Input value={form.name} onChange={e => set('name', e.target.value)} required /></div>
-      <div className="space-y-2"><Label>Position</Label><Input value={form.position} onChange={e => set('position', e.target.value)} /></div>
+      <div className="space-y-2"><Label>Nama *</Label><Input value={form.name} onChange={e => set('name', e.target.value)} required /></div>
+      <div className="space-y-2"><Label>Jabatan</Label><Input value={form.position} onChange={e => set('position', e.target.value)} /></div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={e => set('email', e.target.value)} /></div>
-        <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={e => set('phone', e.target.value)} /></div>
+        <div className="space-y-2"><Label>Telepon</Label><Input value={form.phone} onChange={e => set('phone', e.target.value)} /></div>
       </div>
-      <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Adding...' : 'Add Contact'}</Button>
+      <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Menambahkan...' : 'Tambah Kontak'}</Button>
     </form>
   );
 }
@@ -224,32 +231,32 @@ function CommForm({ onSubmit, loading }: { onSubmit: (d: any) => void; loading: 
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Type</Label>
+          <Label>Tipe</Label>
           <Select value={form.type} onValueChange={v => set('type', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="call">Call</SelectItem>
+              <SelectItem value="call">Telepon</SelectItem>
               <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="meeting">Meeting</SelectItem>
+              <SelectItem value="meeting">Rapat</SelectItem>
               <SelectItem value="whatsapp">WhatsApp</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="other">Lainnya</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Direction</Label>
+          <Label>Arah</Label>
           <Select value={form.direction} onValueChange={v => set('direction', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="outbound">Outbound</SelectItem>
-              <SelectItem value="inbound">Inbound</SelectItem>
+              <SelectItem value="outbound">Keluar</SelectItem>
+              <SelectItem value="inbound">Masuk</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
-      <div className="space-y-2"><Label>Subject</Label><Input value={form.subject} onChange={e => set('subject', e.target.value)} /></div>
-      <div className="space-y-2"><Label>Summary</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
-      <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Logging...' : 'Log Communication'}</Button>
+      <div className="space-y-2"><Label>Subjek</Label><Input value={form.subject} onChange={e => set('subject', e.target.value)} /></div>
+      <div className="space-y-2"><Label>Ringkasan</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
+      <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Mencatat...' : 'Catat Komunikasi'}</Button>
     </form>
   );
 }
