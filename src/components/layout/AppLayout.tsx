@@ -13,7 +13,7 @@ export function AppLayout() {
       <div className="min-h-screen flex w-full dark">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 shrink-0">
+          <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 shrink-0 relative">
             <SidebarTrigger />
             <span className="absolute left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">CRM</span>
             <div className="flex items-center gap-3">
