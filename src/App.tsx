@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
 import ClientDetail from "@/pages/ClientDetail";
 import Deals from "@/pages/Deals";
+import Products from "@/pages/Products";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
