@@ -11,13 +11,14 @@ import {
   useSidebar } from
 '@/components/ui/sidebar';
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, Building2, Target, MessageSquare, Calendar, Settings } from 'lucide-react';
+import { LayoutDashboard, Building2, Target, Package, Calendar, Settings } from 'lucide-react';
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
 
 const mainNav = [
 { title: 'Dasbor', url: '/dashboard', icon: LayoutDashboard },
 { title: 'Klien', url: '/clients', icon: Building2 },
-{ title: 'Deal', url: '/deals', icon: Target }];
+{ title: 'Deal', url: '/deals', icon: Target },
+{ title: 'Produk', url: '/products', icon: Package }];
 
 const secondaryNav = [
 { title: 'Rapat', url: '#', icon: Calendar, disabled: true },
