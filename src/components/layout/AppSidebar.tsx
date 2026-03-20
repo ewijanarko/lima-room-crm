@@ -11,7 +11,7 @@ import {
   useSidebar } from
 '@/components/ui/sidebar';
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Calendar, Settings } from 'lucide-react';
+import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Users, Calendar } from 'lucide-react';
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
 
 const mainNav = [
@@ -23,8 +23,8 @@ const mainNav = [
 { title: 'Laporan', url: '/reports', icon: BarChart3 }];
 
 const secondaryNav = [
-{ title: 'Rapat', url: '#', icon: Calendar, disabled: true },
-{ title: 'Pengaturan', url: '#', icon: Settings, disabled: true }];
+{ title: 'Tim', url: '/team', icon: Users },
+{ title: 'Rapat', url: '#', icon: Calendar, disabled: true }];
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -59,15 +59,27 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Segera Hadir</SidebarGroupLabel>
+          <SidebarGroupLabel>Lainnya</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryNav.map((item) =>
               <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton disabled className="opacity-40 cursor-not-allowed">
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span>{item.title}</span>}
-                  </SidebarMenuButton>
+                  {item.disabled ? (
+                    <SidebarMenuButton disabled className="opacity-40 cursor-not-allowed">
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </SidebarMenuButton>
+                  ) : (
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className="hover:bg-sidebar-accent"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               )}
             </SidebarMenu>
