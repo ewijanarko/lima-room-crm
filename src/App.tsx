@@ -14,6 +14,7 @@ import Deals from "@/pages/Deals";
 import Products from "@/pages/Products";
 import Tasks from "@/pages/Tasks";
 import Reports from "@/pages/Reports";
+import Team from "@/pages/Team";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
