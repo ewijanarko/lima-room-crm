@@ -23,8 +23,8 @@ const mainNav = [
 { title: 'Laporan', url: '/reports', icon: BarChart3 }];
 
 const secondaryNav = [
-{ title: 'Rapat', url: '#', icon: Calendar, disabled: true },
-{ title: 'Pengaturan', url: '#', icon: Settings, disabled: true }];
+{ title: 'Tim', url: '/team', icon: Users },
+{ title: 'Rapat', url: '#', icon: Calendar, disabled: true }];
 
 export function AppSidebar() {
   const { state } = useSidebar();
