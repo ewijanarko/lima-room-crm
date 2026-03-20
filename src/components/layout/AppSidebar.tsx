@@ -59,7 +59,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Segera Hadir</SidebarGroupLabel>
+          <SidebarGroupLabel>Lainnya</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryNav.map((item) =>
