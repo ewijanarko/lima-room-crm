@@ -19,7 +19,8 @@ const mainNav = [
 { title: 'Klien', url: '/clients', icon: Building2 },
 { title: 'Deal', url: '/deals', icon: Target },
 { title: 'Produk', url: '/products', icon: Package },
-{ title: 'Tugas', url: '/tasks', icon: ClipboardList }];
+{ title: 'Tugas', url: '/tasks', icon: ClipboardList },
+{ title: 'Laporan', url: '/reports', icon: BarChart3 }];
 
 const secondaryNav = [
 { title: 'Rapat', url: '#', icon: Calendar, disabled: true },
