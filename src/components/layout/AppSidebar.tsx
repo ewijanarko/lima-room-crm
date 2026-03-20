@@ -11,7 +11,7 @@ import {
   useSidebar } from
 '@/components/ui/sidebar';
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, Building2, Target, Package, ClipboardList, Calendar, Settings } from 'lucide-react';
+import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Calendar, Settings } from 'lucide-react';
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
 
 const mainNav = [
@@ -19,7 +19,8 @@ const mainNav = [
 { title: 'Klien', url: '/clients', icon: Building2 },
 { title: 'Deal', url: '/deals', icon: Target },
 { title: 'Produk', url: '/products', icon: Package },
-{ title: 'Tugas', url: '/tasks', icon: ClipboardList }];
+{ title: 'Tugas', url: '/tasks', icon: ClipboardList },
+{ title: 'Laporan', url: '/reports', icon: BarChart3 }];
 
 const secondaryNav = [
 { title: 'Rapat', url: '#', icon: Calendar, disabled: true },
