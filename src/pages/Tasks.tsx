@@ -213,7 +213,7 @@ export default function Tasks() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tugas & Aktivitas</h1>
+          <h1 className="text-2xl font-bold text-black">Tugas & Aktivitas</h1>
           <p className="text-muted-foreground text-sm">Kelola tugas dan follow-up Anda</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) resetForm(); setDialogOpen(o); }}>
