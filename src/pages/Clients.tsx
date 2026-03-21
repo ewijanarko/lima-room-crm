@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
+import type { TranslationKey } from '@/lib/translations';
 
 type Client = Tables<'clients'>;
 
@@ -23,15 +25,16 @@ const STATUS_COLORS: Record<string, string> = {
   churned: 'bg-destructive text-destructive-foreground',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Aktif',
-  prospect: 'Prospek',
-  inactive: 'Tidak Aktif',
-  churned: 'Berhenti',
+const STATUS_KEYS: Record<string, TranslationKey> = {
+  active: 'status.active',
+  prospect: 'status.prospect',
+  inactive: 'status.inactive',
+  churned: 'status.churned',
 };
 
 export default function Clients() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -54,7 +57,7 @@ export default function Clients() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       setDialogOpen(false);
-      toast.success('Klien berhasil dibuat');
+      toast.success(t('clients.created'));
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -69,14 +72,14 @@ export default function Clients() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Klien</h1>
+        <h1 className="text-2xl font-bold">{t('clients.title')}</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-1" /> Tambah Klien</Button>
+            <Button><Plus className="h-4 w-4 mr-1" /> {t('clients.addClient')}</Button>
           </DialogTrigger>
           <DialogContent className="bg-card border-border">
-            <DialogHeader><DialogTitle>Klien Baru</DialogTitle></DialogHeader>
-            <ClientForm onSubmit={(data) => createClient.mutate(data)} loading={createClient.isPending} />
+            <DialogHeader><DialogTitle>{t('clients.newClient')}</DialogTitle></DialogHeader>
+            <ClientForm onSubmit={(data) => createClient.mutate(data)} loading={createClient.isPending} t={t} />
           </DialogContent>
         </Dialog>
       </div>
@@ -84,16 +87,16 @@ export default function Clients() {
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Cari klien..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder={t('clients.search')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Semua Status</SelectItem>
-            <SelectItem value="active">Aktif</SelectItem>
-            <SelectItem value="prospect">Prospek</SelectItem>
-            <SelectItem value="inactive">Tidak Aktif</SelectItem>
-            <SelectItem value="churned">Berhenti</SelectItem>
+            <SelectItem value="all">{t('clients.allStatus')}</SelectItem>
+            <SelectItem value="active">{t('status.active')}</SelectItem>
+            <SelectItem value="prospect">{t('status.prospect')}</SelectItem>
+            <SelectItem value="inactive">{t('status.inactive')}</SelectItem>
+            <SelectItem value="churned">{t('status.churned')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -102,18 +105,18 @@ export default function Clients() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Perusahaan</TableHead>
-              <TableHead>Industri</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Kota</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>{t('clients.company')}</TableHead>
+              <TableHead>{t('clients.industry')}</TableHead>
+              <TableHead>{t('clients.status')}</TableHead>
+              <TableHead>{t('clients.city')}</TableHead>
+              <TableHead>{t('clients.email')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Memuat...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('clients.loading')}</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Klien tidak ditemukan</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('clients.notFound')}</TableCell></TableRow>
             ) : (
               filtered.map(client => (
                 <TableRow key={client.id} className="cursor-pointer hover:bg-muted/50">
@@ -124,7 +127,7 @@ export default function Clients() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{client.industry || '—'}</TableCell>
                   <TableCell>
-                    <Badge className={STATUS_COLORS[client.status] || ''}>{STATUS_LABELS[client.status] || client.status}</Badge>
+                    <Badge className={STATUS_COLORS[client.status] || ''}>{t(STATUS_KEYS[client.status] || 'status.active')}</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{client.city || '—'}</TableCell>
                   <TableCell className="text-muted-foreground">{client.email || '—'}</TableCell>
@@ -138,66 +141,63 @@ export default function Clients() {
   );
 }
 
-function ClientForm({ onSubmit, loading }: { onSubmit: (data: any) => void; loading: boolean }) {
+function ClientForm({ onSubmit, loading, t }: { onSubmit: (data: any) => void; loading: boolean; t: (key: any) => string }) {
   const [form, setForm] = useState({ company_name: '', contact_name: '', industry: '', status: 'prospect' as const, city: '', country: '', email: '', phone: '', address: '' });
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
   return (
-    <form
-      onSubmit={e => { e.preventDefault(); onSubmit(form); }}
-      className="space-y-4"
-    >
+    <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
       <div className="space-y-2">
-        <Label>Nama Perusahaan *</Label>
+        <Label>{t('clients.companyName')}</Label>
         <Input value={form.company_name} onChange={e => set('company_name', e.target.value)} required />
       </div>
       <div className="space-y-2">
-        <Label>Nama Kontak</Label>
+        <Label>{t('clients.contactName')}</Label>
         <Input value={form.contact_name} onChange={e => set('contact_name', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Industri</Label>
+          <Label>{t('clients.industry')}</Label>
           <Input value={form.industry} onChange={e => set('industry', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Status</Label>
+          <Label>{t('clients.status')}</Label>
           <Select value={form.status} onValueChange={v => set('status', v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="prospect">Prospek</SelectItem>
-              <SelectItem value="active">Aktif</SelectItem>
-              <SelectItem value="inactive">Tidak Aktif</SelectItem>
+              <SelectItem value="prospect">{t('status.prospect')}</SelectItem>
+              <SelectItem value="active">{t('status.active')}</SelectItem>
+              <SelectItem value="inactive">{t('status.inactive')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Negara</Label>
+          <Label>{t('clients.country')}</Label>
           <Input value={form.country} onChange={e => set('country', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Kota</Label>
+          <Label>{t('clients.city')}</Label>
           <Input value={form.city} onChange={e => set('city', e.target.value)} />
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Alamat Lengkap</Label>
+        <Label>{t('clients.fullAddress')}</Label>
         <Input value={form.address} onChange={e => set('address', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Email</Label>
+          <Label>{t('clients.email')}</Label>
           <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Telepon</Label>
+          <Label>{t('clients.phone')}</Label>
           <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
         </div>
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Membuat...' : 'Buat Klien'}
+        {loading ? t('clients.creating') : t('clients.createClient')}
       </Button>
     </form>
   );

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/hooks/useLanguage';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; icon: typeof Crown; variant:
 
 export default function Team() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
 
@@ -73,18 +75,16 @@ export default function Team() {
 
   const updateRole = useMutation({
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: AppRole }) => {
-      // Delete existing role
       const { error: deleteError } = await supabase.from('user_roles').delete().eq('user_id', userId);
       if (deleteError) throw deleteError;
-      // Insert new role
       const { error: insertError } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
       if (insertError) throw insertError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-roles'] });
-      toast.success('Peran berhasil diperbarui');
+      toast.success(t('team.roleUpdated'));
     },
-    onError: () => toast.error('Gagal memperbarui peran'),
+    onError: () => toast.error(t('team.roleUpdateFailed')),
   });
 
   const getUserRole = (userId: string): AppRole => {
@@ -103,9 +103,7 @@ export default function Team() {
     };
   };
 
-  const filtered = profiles?.filter(p =>
-    p.full_name?.toLowerCase().includes(search.toLowerCase())
-  ) ?? [];
+  const filtered = profiles?.filter(p => p.full_name?.toLowerCase().includes(search.toLowerCase())) ?? [];
 
   const getInitials = (name: string | null) => {
     if (!name) return '?';
@@ -116,8 +114,8 @@ export default function Team() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Shield className="h-16 w-16 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">Akses Ditolak</h2>
-        <p className="text-muted-foreground">Hanya admin yang dapat mengakses halaman ini.</p>
+        <h2 className="text-xl font-semibold text-foreground">{t('team.accessDenied')}</h2>
+        <p className="text-muted-foreground">{t('team.adminOnly')}</p>
       </div>
     );
   }
@@ -125,18 +123,17 @@ export default function Team() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Manajemen Tim</h1>
-        <p className="text-muted-foreground">Kelola anggota tim dan peran pengguna</p>
+        <h1 className="text-2xl font-bold text-foreground">{t('team.title')}</h1>
+        <p className="text-muted-foreground">{t('team.subtitle')}</p>
       </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
             <div className="rounded-lg bg-primary/10 p-3"><Users className="h-5 w-5 text-primary" /></div>
             <div>
               <p className="text-2xl font-bold text-foreground">{profiles?.length ?? 0}</p>
-              <p className="text-sm text-muted-foreground">Total Anggota</p>
+              <p className="text-sm text-muted-foreground">{t('team.totalMembers')}</p>
             </div>
           </CardContent>
         </Card>
@@ -160,18 +157,16 @@ export default function Team() {
         </Card>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Cari anggota..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+        <Input placeholder={t('team.search')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
       </div>
 
-      {/* Team list */}
       <div className="grid gap-4">
         {isLoading ? (
-          <p className="text-muted-foreground text-center py-8">Memuat...</p>
+          <p className="text-muted-foreground text-center py-8">{t('team.loading')}</p>
         ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">Tidak ada anggota ditemukan</p>
+          <p className="text-muted-foreground text-center py-8">{t('team.noMembers')}</p>
         ) : (
           filtered.map(profile => {
             const role = getUserRole(profile.user_id);
@@ -190,30 +185,24 @@ export default function Team() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-foreground truncate">{profile.full_name ?? 'Tanpa Nama'}</p>
-                      {isSelf && <Badge variant="outline" className="text-xs">Anda</Badge>}
+                      <p className="font-medium text-foreground truncate">{profile.full_name ?? t('team.noName')}</p>
+                      {isSelf && <Badge variant="outline" className="text-xs">{t('team.you')}</Badge>}
                     </div>
                     <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
-                      <span>{stats.totalDeals} deal ({stats.wonDeals} won)</span>
-                      <span>{stats.activeTasks} tugas aktif</span>
-                      <span>{stats.doneTasks} selesai</span>
+                      <span>{stats.totalDeals} {t('team.deal')} ({stats.wonDeals} won)</span>
+                      <span>{stats.activeTasks} {t('team.activeTasks')}</span>
+                      <span>{stats.doneTasks} {t('team.completed')}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <Badge variant={ROLE_CONFIG[role].variant} className="gap-1">
-                      <RoleIcon className="h-3 w-3" />
-                      {ROLE_CONFIG[role].label}
+                      <RoleIcon className="h-3 w-3" />{ROLE_CONFIG[role].label}
                     </Badge>
 
                     {!isSelf && (
-                      <Select
-                        value={role}
-                        onValueChange={(val) => updateRole.mutate({ userId: profile.user_id, newRole: val as AppRole })}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue />
-                        </SelectTrigger>
+                      <Select value={role} onValueChange={(val) => updateRole.mutate({ userId: profile.user_id, newRole: val as AppRole })}>
+                        <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Admin</SelectItem>
                           <SelectItem value="manager">Manager</SelectItem>
