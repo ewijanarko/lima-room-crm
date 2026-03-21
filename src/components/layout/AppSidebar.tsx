@@ -12,23 +12,28 @@ import {
 '@/components/ui/sidebar';
 import { NavLink } from '@/components/NavLink';
 import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Users, Calendar } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
-
-const mainNav = [
-{ title: 'Dasbor', url: '/dashboard', icon: LayoutDashboard },
-{ title: 'Klien', url: '/clients', icon: Building2 },
-{ title: 'Deal', url: '/deals', icon: Target },
-{ title: 'Produk', url: '/products', icon: Package },
-{ title: 'Tugas', url: '/tasks', icon: ClipboardList },
-{ title: 'Laporan', url: '/reports', icon: BarChart3 }];
-
-const secondaryNav = [
-{ title: 'Tim', url: '/team', icon: Users },
-{ title: 'Rapat', url: '#', icon: Calendar, disabled: true }];
+import type { TranslationKey } from '@/lib/translations';
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { t } = useLanguage();
   const collapsed = state === 'collapsed';
+
+  const mainNav = [
+    { titleKey: 'nav.dashboard' as TranslationKey, url: '/dashboard', icon: LayoutDashboard },
+    { titleKey: 'nav.clients' as TranslationKey, url: '/clients', icon: Building2 },
+    { titleKey: 'nav.deals' as TranslationKey, url: '/deals', icon: Target },
+    { titleKey: 'nav.products' as TranslationKey, url: '/products', icon: Package },
+    { titleKey: 'nav.tasks' as TranslationKey, url: '/tasks', icon: ClipboardList },
+    { titleKey: 'nav.reports' as TranslationKey, url: '/reports', icon: BarChart3 },
+  ];
+
+  const secondaryNav = [
+    { titleKey: 'nav.team' as TranslationKey, url: '/team', icon: Users },
+    { titleKey: 'nav.meetings' as TranslationKey, url: '#', icon: Calendar, disabled: true },
+  ];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -38,18 +43,18 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Utama</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.main')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) =>
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton asChild>
                     <NavLink
                     to={item.url}
                     className="hover:bg-sidebar-accent"
                     activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.titleKey)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -59,15 +64,15 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Lainnya</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.other')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryNav.map((item) =>
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={item.titleKey}>
                   {item.disabled ? (
                     <SidebarMenuButton disabled className="opacity-40 cursor-not-allowed">
                       <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.titleKey)}</span>}
                     </SidebarMenuButton>
                   ) : (
                     <SidebarMenuButton asChild>
@@ -76,7 +81,7 @@ export function AppSidebar() {
                         className="hover:bg-sidebar-accent"
                         activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                         <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        {!collapsed && <span>{t(item.titleKey)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   )}
