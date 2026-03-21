@@ -4,26 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatIDR } from '@/lib/format';
 import { Building2, Target, TrendingUp, DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useLanguage } from '@/hooks/useLanguage';
+import type { TranslationKey } from '@/lib/translations';
 
-const STAGE_LABELS: Record<string, string> = {
-  lead: 'Prospek',
-  qualified: 'Terkualifikasi',
-  proposal: 'Proposal',
-  negotiation: 'Negosiasi',
-  won: 'Menang',
-  lost: 'Kalah',
+const STAGE_KEYS: Record<string, TranslationKey> = {
+  lead: 'stage.lead', qualified: 'stage.qualified', proposal: 'stage.proposal',
+  negotiation: 'stage.negotiation', won: 'stage.won', lost: 'stage.lost',
 };
 
 const STAGE_COLORS: Record<string, string> = {
-  lead: 'hsl(215, 80%, 52%)',
-  qualified: 'hsl(260, 60%, 55%)',
-  proposal: 'hsl(43, 74%, 49%)',
-  negotiation: 'hsl(25, 85%, 55%)',
-  won: 'hsl(160, 60%, 42%)',
-  lost: 'hsl(0, 72%, 51%)',
+  lead: 'hsl(215, 80%, 52%)', qualified: 'hsl(260, 60%, 55%)', proposal: 'hsl(43, 74%, 49%)',
+  negotiation: 'hsl(25, 85%, 55%)', won: 'hsl(160, 60%, 42%)', lost: 'hsl(0, 72%, 51%)',
 };
 
 export default function Dashboard() {
+  const { t } = useLanguage();
+
   const { data: clients } = useQuery({
     queryKey: ['clients-count'],
     queryFn: async () => {
@@ -56,24 +52,23 @@ export default function Dashboard() {
   const pipelineValue = openDeals.reduce((sum, d) => sum + (d.value || 0), 0);
   const wonValue = deals?.filter(d => d.stage === 'won').reduce((sum, d) => sum + (d.value || 0), 0) || 0;
 
-  // Funnel data
-  const stageCounts = Object.keys(STAGE_LABELS).map(stage => ({
-    name: STAGE_LABELS[stage],
+  const stageCounts = Object.keys(STAGE_KEYS).map(stage => ({
+    name: t(STAGE_KEYS[stage]),
     stage,
     count: deals?.filter(d => d.stage === stage).length || 0,
     value: deals?.filter(d => d.stage === stage).reduce((s, d) => s + (d.value || 0), 0) || 0,
   }));
 
   const kpis = [
-    { label: 'Pendapatan (Menang)', value: formatIDR(wonValue), icon: DollarSign, color: 'text-accent' },
-    { label: 'Nilai Pipeline', value: formatIDR(pipelineValue), icon: TrendingUp, color: 'text-primary' },
-    { label: 'Klien Aktif', value: clients?.toString() || '0', icon: Building2, color: 'text-gold' },
-    { label: 'Deal Terbuka', value: openDeals.length.toString(), icon: Target, color: 'text-primary' },
+    { label: t('dashboard.revenue'), value: formatIDR(wonValue), icon: DollarSign, color: 'text-accent' },
+    { label: t('dashboard.pipelineValue'), value: formatIDR(pipelineValue), icon: TrendingUp, color: 'text-primary' },
+    { label: t('dashboard.activeClients'), value: clients?.toString() || '0', icon: Building2, color: 'text-gold' },
+    { label: t('dashboard.openDeals'), value: openDeals.length.toString(), icon: Target, color: 'text-primary' },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-black dark:text-black">Dasbor</h1>
+      <h1 className="text-2xl font-bold text-black dark:text-black">{t('dashboard.title')}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
@@ -94,7 +89,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-base">Corong Tahap Deal</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.dealFunnel')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -105,7 +100,7 @@ export default function Dashboard() {
                   contentStyle={{ background: 'hsl(222,25%,14%)', border: '1px solid hsl(222,20%,20%)', borderRadius: 8, color: 'hsl(220,15%,90%)' }}
                   formatter={(val: number, _name: string, entry: any) => [
                     `${val} deal (${formatIDR(entry.payload.value)})`,
-                    'Jumlah',
+                    t('dashboard.count'),
                   ]}
                 />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]}>
@@ -120,7 +115,7 @@ export default function Dashboard() {
 
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-base">Komunikasi Terbaru</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.recentComms')}</CardTitle>
           </CardHeader>
           <CardContent>
             {recentComms && recentComms.length > 0 ? (
@@ -129,7 +124,7 @@ export default function Dashboard() {
                   <div key={comm.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/50">
                     <MessageIcon type={comm.type} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{comm.subject || 'Tanpa subjek'}</p>
+                      <p className="text-sm font-medium truncate">{comm.subject || t('dashboard.noSubject')}</p>
                       <p className="text-xs text-muted-foreground">
                         {comm.clients?.company_name} · {new Date(comm.communication_date).toLocaleDateString('id-ID')}
                       </p>
@@ -138,7 +133,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Belum ada komunikasi yang dicatat.</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.noComms')}</p>
             )}
           </CardContent>
         </Card>
