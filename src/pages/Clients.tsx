@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import type { TranslationKey } from '@/lib/translations';
@@ -39,6 +39,8 @@ export default function Clients() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['clients'],
@@ -62,12 +64,32 @@ export default function Clients() {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const updateClient = useMutation({
+    mutationFn: async (form: Partial<Client> & { id: string }) => {
+      const { id, ...rest } = form;
+      const { error } = await supabase.from('clients').update(rest).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      setEditDialogOpen(false);
+      setEditingClient(null);
+      toast.success(t('clients.updated'));
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const filtered = clients.filter(c => {
     const matchSearch = c.company_name.toLowerCase().includes(search.toLowerCase()) ||
       (c.industry || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || c.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+    setEditDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -110,13 +132,14 @@ export default function Clients() {
               <TableHead>{t('clients.status')}</TableHead>
               <TableHead>{t('clients.city')}</TableHead>
               <TableHead>{t('clients.email')}</TableHead>
+              <TableHead className="w-16">{t('clients.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('clients.loading')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('clients.loading')}</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('clients.notFound')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('clients.notFound')}</TableCell></TableRow>
             ) : (
               filtered.map(client => (
                 <TableRow key={client.id} className="cursor-pointer hover:bg-muted/50">
@@ -131,18 +154,54 @@ export default function Clients() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{client.city || '—'}</TableCell>
                   <TableCell className="text-muted-foreground">{client.email || '—'}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) setEditingClient(null); }}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader><DialogTitle>{t('clients.editClient')}</DialogTitle></DialogHeader>
+          {editingClient && (
+            <ClientForm
+              initialData={editingClient}
+              onSubmit={(data) => updateClient.mutate({ ...data, id: editingClient.id })}
+              loading={updateClient.isPending}
+              t={t}
+              isEdit
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function ClientForm({ onSubmit, loading, t }: { onSubmit: (data: any) => void; loading: boolean; t: (key: any) => string }) {
-  const [form, setForm] = useState({ company_name: '', contact_name: '', industry: '', status: 'prospect' as const, city: '', country: '', email: '', phone: '', address: '' });
+function ClientForm({ onSubmit, loading, t, initialData, isEdit }: {
+  onSubmit: (data: any) => void;
+  loading: boolean;
+  t: (key: any) => string;
+  initialData?: Client;
+  isEdit?: boolean;
+}) {
+  const [form, setForm] = useState({
+    company_name: initialData?.company_name || '',
+    contact_name: initialData?.contact_name || '',
+    industry: initialData?.industry || '',
+    status: (initialData?.status || 'prospect') as string,
+    city: initialData?.city || '',
+    country: initialData?.country || '',
+    email: initialData?.email || '',
+    phone: initialData?.phone || '',
+    address: initialData?.address || '',
+  });
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
   return (
@@ -168,6 +227,7 @@ function ClientForm({ onSubmit, loading, t }: { onSubmit: (data: any) => void; l
               <SelectItem value="prospect">{t('status.prospect')}</SelectItem>
               <SelectItem value="active">{t('status.active')}</SelectItem>
               <SelectItem value="inactive">{t('status.inactive')}</SelectItem>
+              <SelectItem value="churned">{t('status.churned')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -197,7 +257,10 @@ function ClientForm({ onSubmit, loading, t }: { onSubmit: (data: any) => void; l
         </div>
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? t('clients.creating') : t('clients.createClient')}
+        {isEdit
+          ? (loading ? t('clients.saving') : t('clients.saveChanges'))
+          : (loading ? t('clients.creating') : t('clients.createClient'))
+        }
       </Button>
     </form>
   );

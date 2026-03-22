@@ -59,6 +59,11 @@ const id = {
   'clients.phone': 'Telepon',
   'clients.creating': 'Membuat...',
   'clients.createClient': 'Buat Klien',
+  'clients.editClient': 'Edit Klien',
+  'clients.saving': 'Menyimpan...',
+  'clients.saveChanges': 'Simpan Perubahan',
+  'clients.updated': 'Klien berhasil diperbarui',
+  'clients.actions': 'Aksi',
 
   // Status labels
   'status.active': 'Aktif',
@@ -319,6 +324,11 @@ const en: Record<keyof typeof id, string> = {
   'clients.phone': 'Phone',
   'clients.creating': 'Creating...',
   'clients.createClient': 'Create Client',
+  'clients.editClient': 'Edit Client',
+  'clients.saving': 'Saving...',
+  'clients.saveChanges': 'Save Changes',
+  'clients.updated': 'Client updated successfully',
+  'clients.actions': 'Actions',
 
   // Status labels
   'status.active': 'Active',
