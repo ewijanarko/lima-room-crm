@@ -101,7 +101,7 @@ export default function Deals() {
             </DialogTrigger>
             <DialogContent className="bg-card border-border">
               <DialogHeader><DialogTitle>{t('deals.newDeal')}</DialogTitle></DialogHeader>
-              <DealForm clients={clients} onSubmit={d => createDeal.mutate(d)} loading={createDeal.isPending} t={t} />
+              <DealForm clients={clients} products={products} onSubmit={d => createDeal.mutate(d)} loading={createDeal.isPending} t={t} />
             </DialogContent>
           </Dialog>
         </div>
