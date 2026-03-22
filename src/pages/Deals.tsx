@@ -268,7 +268,7 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
   );
 }
 
-function DealForm({ clients, onSubmit, loading, t }: { clients: any[]; onSubmit: (d: any) => void; loading: boolean; t: (key: any) => string }) {
+function DealForm({ clients, products, onSubmit, loading, t }: { clients: any[]; products: any[]; onSubmit: (d: any) => void; loading: boolean; t: (key: any) => string }) {
   const [form, setForm] = useState({ title: '', client_id: '', stage: 'lead', value: 0, product: '', description: '' });
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
@@ -290,7 +290,12 @@ function DealForm({ clients, onSubmit, loading, t }: { clients: any[]; onSubmit:
         </div>
         <div className="space-y-2">
           <Label>{t('deals.product')}</Label>
-          <Input value={form.product} onChange={e => set('product', e.target.value)} />
+          <Select value={form.product} onValueChange={v => set('product', v)}>
+            <SelectTrigger><SelectValue placeholder={t('deals.selectProduct')} /></SelectTrigger>
+            <SelectContent>
+              {products.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <Button type="submit" className="w-full" disabled={loading || !form.client_id}>{loading ? t('deals.creating') : t('deals.createDeal')}</Button>
