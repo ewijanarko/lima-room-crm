@@ -59,6 +59,11 @@ const id = {
   'clients.phone': 'Telepon',
   'clients.creating': 'Membuat...',
   'clients.createClient': 'Buat Klien',
+  'clients.editClient': 'Edit Klien',
+  'clients.saving': 'Menyimpan...',
+  'clients.saveChanges': 'Simpan Perubahan',
+  'clients.updated': 'Klien berhasil diperbarui',
+  'clients.actions': 'Aksi',
 
   // Status labels
   'status.active': 'Aktif',
