@@ -324,6 +324,11 @@ const en: Record<keyof typeof id, string> = {
   'clients.phone': 'Phone',
   'clients.creating': 'Creating...',
   'clients.createClient': 'Create Client',
+  'clients.editClient': 'Edit Client',
+  'clients.saving': 'Saving...',
+  'clients.saveChanges': 'Save Changes',
+  'clients.updated': 'Client updated successfully',
+  'clients.actions': 'Actions',
 
   // Status labels
   'status.active': 'Active',
