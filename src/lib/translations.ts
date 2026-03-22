@@ -82,6 +82,7 @@ const id = {
   'deals.product': 'Produk',
   'deals.days': 'Hari',
   'deals.selectClient': 'Pilih klien',
+  'deals.selectProduct': 'Pilih produk',
   'deals.valueIDR': 'Nilai (IDR)',
   'deals.creating': 'Membuat...',
   'deals.createDeal': 'Buat Deal',
