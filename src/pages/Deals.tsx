@@ -52,6 +52,14 @@ export default function Deals() {
     },
   });
 
+  const { data: products = [] } = useQuery({
+    queryKey: ['products-list'],
+    queryFn: async () => {
+      const { data } = await supabase.from('products').select('id, name').eq('is_active', true).order('name');
+      return data || [];
+    },
+  });
+
   const createDeal = useMutation({
     mutationFn: async (form: any) => {
       const { error } = await supabase.from('deals').insert({ ...form, created_by: user?.id });
