@@ -348,6 +348,7 @@ const en: Record<keyof typeof id, string> = {
   'deals.product': 'Product',
   'deals.days': 'Days',
   'deals.selectClient': 'Select client',
+  'deals.selectProduct': 'Select product',
   'deals.valueIDR': 'Value (IDR)',
   'deals.creating': 'Creating...',
   'deals.createDeal': 'Create Deal',
