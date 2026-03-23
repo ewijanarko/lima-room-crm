@@ -11,7 +11,7 @@ import {
   useSidebar } from
 '@/components/ui/sidebar';
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Users, Calendar } from 'lucide-react';
+import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Users, Calendar, Handshake, Rocket } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
 import type { TranslationKey } from '@/lib/translations';
