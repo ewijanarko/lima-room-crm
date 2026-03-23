@@ -114,6 +114,8 @@ const id = {
   'comm.inbound': 'Masuk',
   'comm.logging': 'Mencatat...',
   'comm.log': 'Catat Komunikasi',
+  'comm.date': 'Tanggal & Waktu',
+  'comm.summaryPlaceholder': 'Tulis ringkasan komunikasi di sini...',
 
   // Products
   'products.title': 'Produk & Layanan',
