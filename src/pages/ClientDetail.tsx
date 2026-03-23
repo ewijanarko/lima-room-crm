@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -194,7 +196,7 @@ export default function ClientDetail() {
                 <span className="text-lg">{({ call: '📞', email: '✉️', meeting: '🤝', whatsapp: '💬', other: '📝' } as any)[c.type] || '📝'}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{c.subject || t('clientDetail.noSubject')}</p>
-                  {c.summary && <p className="text-xs text-muted-foreground mt-1">{c.summary}</p>}
+                  {c.summary && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{c.summary}</p>}
                   <p className="text-xs text-muted-foreground mt-1">
                     {c.direction === 'outbound' ? t('deals.outbound') : t('deals.inbound')} · {formatDateTime(c.communication_date)}
                   </p>
@@ -230,7 +232,7 @@ function ContactForm({ onSubmit, loading, t }: { onSubmit: (d: any) => void; loa
 }
 
 function CommForm({ onSubmit, loading, t }: { onSubmit: (d: any) => void; loading: boolean; t: (key: any) => string }) {
-  const [form, setForm] = useState({ type: 'call' as const, direction: 'outbound' as const, subject: '', summary: '' });
+  const [form, setForm] = useState({ type: 'call' as const, direction: 'outbound' as const, subject: '', summary: '', communication_date: new Date().toISOString() });
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
@@ -259,8 +261,12 @@ function CommForm({ onSubmit, loading, t }: { onSubmit: (d: any) => void; loadin
           </Select>
         </div>
       </div>
+      <div className="space-y-2">
+        <Label>{t('comm.date')}</Label>
+        <Input type="datetime-local" value={form.communication_date.slice(0, 16)} onChange={e => set('communication_date', new Date(e.target.value).toISOString())} />
+      </div>
       <div className="space-y-2"><Label>{t('comm.subject')}</Label><Input value={form.subject} onChange={e => set('subject', e.target.value)} /></div>
-      <div className="space-y-2"><Label>{t('comm.summary')}</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
+      <div className="space-y-2"><Label>{t('comm.summary')}</Label><Textarea value={form.summary} onChange={e => set('summary', e.target.value)} rows={5} placeholder={t('comm.summaryPlaceholder')} /></div>
       <Button type="submit" className="w-full" disabled={loading}>{loading ? t('comm.logging') : t('comm.log')}</Button>
     </form>
   );
