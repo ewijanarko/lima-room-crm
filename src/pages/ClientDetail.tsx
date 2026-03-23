@@ -103,6 +103,7 @@ export default function ClientDetail() {
           <TabsTrigger value="contacts">{t('clientDetail.contacts')} ({contacts.length})</TabsTrigger>
           <TabsTrigger value="deals">{t('clientDetail.deals')} ({deals.length})</TabsTrigger>
           <TabsTrigger value="comms">{t('clientDetail.comms')} ({comms.length})</TabsTrigger>
+          <TabsTrigger value="documents">{t('clientDetail.documents')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
