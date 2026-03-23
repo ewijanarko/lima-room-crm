@@ -204,6 +204,10 @@ export default function ClientDetail() {
             {comms.length === 0 && <p className="text-sm text-muted-foreground">{t('clientDetail.noComms')}</p>}
           </div>
         </TabsContent>
+
+        <TabsContent value="documents" className="mt-4">
+          <DocumentsTab clientId={id!} t={t} user={user} />
+        </TabsContent>
       </Tabs>
     </div>
   );
