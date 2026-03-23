@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Plus, User, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Plus, User, Phone, Mail, Upload, Download, Trash2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatIDR, formatDateTime } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
@@ -103,6 +103,7 @@ export default function ClientDetail() {
           <TabsTrigger value="contacts">{t('clientDetail.contacts')} ({contacts.length})</TabsTrigger>
           <TabsTrigger value="deals">{t('clientDetail.deals')} ({deals.length})</TabsTrigger>
           <TabsTrigger value="comms">{t('clientDetail.comms')} ({comms.length})</TabsTrigger>
+          <TabsTrigger value="documents">{t('clientDetail.documents')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -203,6 +204,10 @@ export default function ClientDetail() {
             {comms.length === 0 && <p className="text-sm text-muted-foreground">{t('clientDetail.noComms')}</p>}
           </div>
         </TabsContent>
+
+        <TabsContent value="documents" className="mt-4">
+          <DocumentsTab clientId={id!} t={t} user={user} />
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -258,5 +263,103 @@ function CommForm({ onSubmit, loading, t }: { onSubmit: (d: any) => void; loadin
       <div className="space-y-2"><Label>{t('comm.summary')}</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
       <Button type="submit" className="w-full" disabled={loading}>{loading ? t('comm.logging') : t('comm.log')}</Button>
     </form>
+  );
+}
+
+function DocumentsTab({ clientId, t, user }: { clientId: string; t: (key: any) => string; user: any }) {
+  const queryClient = useQueryClient();
+  const [uploading, setUploading] = useState(false);
+
+  const { data: documents = [] } = useQuery({
+    queryKey: ['client-documents', clientId],
+    queryFn: async () => {
+      const { data } = await supabase.from('client_documents').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
+      return data || [];
+    },
+  });
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t('docs.maxSize'));
+      return;
+    }
+    setUploading(true);
+    try {
+      const filePath = `${clientId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('client-documents').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      const { error: dbError } = await supabase.from('client_documents').insert({
+        client_id: clientId, file_name: file.name, file_path: filePath,
+        file_size: file.size, mime_type: file.type, uploaded_by: user?.id,
+      });
+      if (dbError) throw dbError;
+      queryClient.invalidateQueries({ queryKey: ['client-documents', clientId] });
+      toast.success(t('docs.uploaded'));
+    } catch (err: any) {
+      toast.error(err.message || t('docs.uploadFailed'));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }
+
+  async function handleDownload(doc: any) {
+    const { data } = await supabase.storage.from('client-documents').createSignedUrl(doc.file_path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  }
+
+  const deleteMutation = useMutation({
+    mutationFn: async (doc: any) => {
+      await supabase.storage.from('client-documents').remove([doc.file_path]);
+      const { error } = await supabase.from('client_documents').delete().eq('id', doc.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client-documents', clientId] });
+      toast.success(t('docs.deleted'));
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  function formatFileSize(bytes: number | null) {
+    if (!bytes) return '—';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <label>
+          <input type="file" className="hidden" onChange={handleUpload} accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp" disabled={uploading} />
+          <Button asChild size="sm" disabled={uploading}>
+            <span><Upload className="h-4 w-4 mr-1" />{uploading ? t('docs.uploading') : t('docs.upload')}</span>
+          </Button>
+        </label>
+        <span className="text-xs text-muted-foreground">{t('docs.maxSize')}</span>
+      </div>
+      <div className="space-y-2">
+        {documents.map((doc: any) => (
+          <div key={doc.id} className="flex items-center gap-3 p-3 rounded-md bg-muted/50 group">
+            <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{doc.file_name}</p>
+              <p className="text-xs text-muted-foreground">{formatFileSize(doc.file_size)} · {formatDateTime(doc.created_at)}</p>
+            </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(doc)}>
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => deleteMutation.mutate(doc)}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+        {documents.length === 0 && <p className="text-sm text-muted-foreground">{t('docs.noDocuments')}</p>}
+      </div>
+    </div>
   );
 }
