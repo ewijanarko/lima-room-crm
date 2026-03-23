@@ -114,6 +114,8 @@ const id = {
   'comm.inbound': 'Masuk',
   'comm.logging': 'Mencatat...',
   'comm.log': 'Catat Komunikasi',
+  'comm.date': 'Tanggal & Waktu',
+  'comm.summaryPlaceholder': 'Tulis ringkasan komunikasi di sini...',
 
   // Products
   'products.title': 'Produk & Layanan',
@@ -468,6 +470,8 @@ const en: Record<keyof typeof id, string> = {
   'comm.inbound': 'Inbound',
   'comm.logging': 'Logging...',
   'comm.log': 'Log Communication',
+  'comm.date': 'Date & Time',
+  'comm.summaryPlaceholder': 'Write communication summary here...',
 
   // Products
   'products.title': 'Products & Services',
