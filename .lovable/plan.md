@@ -1,83 +1,108 @@
 
 
-# Phase 2: CRM Feature Expansion
+# Phase 2 Implementation Plan (4 Features)
 
-This is a large scope covering 4 major features. I recommend implementing them incrementally across multiple prompts. Here's the full plan:
+## Scope
 
----
-
-## 1. Manajemen Produk/Layanan
-
-**Database**: New `products` table with columns: id, name, description, category, price, is_active, created_by, created_at, updated_at. RLS: authenticated users can CRUD.
-
-**Frontend**: New `/products` page with table view, search/filter, create/edit dialog. Link products to deals (deals already have a `product` text field -- we'll convert it to reference the products table via a new `product_id` column).
-
-**Sidebar**: Add "Produk" nav item under "Utama" group.
+Building 4 features (email notifications skipped):
+1. **Meetings/Calendar** -- new table + full page
+2. **Partners** -- new table + full page + deal linking
+3. **Implementations** -- new tables + project tracking page
+4. **Client Documents** -- storage bucket + upload UI in ClientDetail
 
 ---
 
-## 2. Laporan & Analitik
+## 1. Meetings/Calendar
 
-**Frontend**: New `/reports` page with multiple report views:
-- Revenue by month (bar chart)
-- Deal conversion funnel (win rate by stage)
-- Top clients by deal value
-- Sales performance by user
-- Date range filter
+**Database Migration:**
+- Create `meetings` table: id, title, description, meeting_date (timestamptz), duration_minutes (int, default 60), location (text), related_client_id (FK clients), related_deal_id (FK deals), created_by (uuid), created_at, updated_at
+- RLS: authenticated users can SELECT, INSERT, UPDATE, DELETE
 
-Uses existing data from `deals`, `clients`, `communications` tables. No new tables needed. Uses Recharts (already installed).
+**Frontend (`src/pages/Meetings.tsx`):**
+- Monthly calendar grid showing meetings as dots/badges on dates
+- List view of upcoming meetings below the calendar
+- Create/edit meeting dialog with fields: title, date/time, duration, location, client select, deal select
+- Delete meeting button
 
-**Sidebar**: Add "Laporan" nav item.
+**Sidebar:** Enable the existing disabled "Rapat" nav item, point to `/meetings`
 
----
+**Routing:** Add `/meetings` route in App.tsx
 
-## 3. Manajemen Tugas/Aktivitas
-
-**Database**: New `tasks` table: id, title, description, status (enum: todo/in_progress/done), priority (enum: low/medium/high), due_date, assigned_to (uuid), related_client_id, related_deal_id, created_by, created_at, updated_at. RLS: authenticated users can view all, create/update own or assigned tasks.
-
-**Frontend**: New `/tasks` page with:
-- List/board view of tasks
-- Create task dialog with client/deal linking
-- Status updates, priority badges
-- Filter by status, assignee, due date
-- Tasks tab in ClientDetail and DealSheet
-
-**Sidebar**: Add "Tugas" nav item (replace the disabled "Rapat" placeholder).
+**Translations:** Add ~25 meeting keys (EN/ID)
 
 ---
 
-## 4. Manajemen Tim/Pengguna
+## 2. Partners
 
-**Frontend**: New `/team` page (admin-only):
-- List all users from `profiles` table with their roles
-- Change user roles (admin/manager/user) via `user_roles` table
-- View user activity summary
-- Invite users (link to sign-up)
+**Database Migration:**
+- Create enum `partner_type`: 'referral', 'reseller', 'technology'
+- Create `partners` table: id, company_name, contact_name, email, phone, type (partner_type), commission_rate (numeric), is_active (boolean, default true), notes, created_by, created_at, updated_at
+- Add `partner_id` (uuid, FK partners, nullable) column to `deals` table
+- RLS: authenticated users can full CRUD
 
-Uses existing `profiles`, `user_roles` tables and `has_role` function. Add role-based UI guards (admin-only access to team page).
+**Frontend (`src/pages/Partners.tsx`):**
+- Table view with search, filter by type/status
+- Create/edit partner dialog
+- Partner detail showing referred deals
+- Commission rate display
 
-**Sidebar**: Replace disabled "Pengaturan" with "Tim" nav item. Show only if user is admin.
+**Sidebar:** Add "Mitra" nav item in secondary nav group
+
+**Routing:** Add `/partners` route in App.tsx
+
+**Translations:** Add ~20 partner keys (EN/ID)
+
+---
+
+## 3. Implementations (Project Tracking)
+
+**Database Migration:**
+- Create enum `implementation_status`: 'planning', 'in_progress', 'completed', 'on_hold'
+- Create enum `milestone_status`: 'pending', 'completed'
+- Create `implementations` table: id, deal_id (FK deals), client_id (FK clients), title, status (implementation_status, default 'planning'), start_date, target_date, progress_percent (int, default 0), notes, created_by, created_at, updated_at
+- Create `implementation_milestones` table: id, implementation_id (FK implementations ON DELETE CASCADE), title, status (milestone_status, default 'pending'), due_date, completed_at, created_at
+- RLS: authenticated users can full CRUD on both tables
+
+**Frontend (`src/pages/Implementations.tsx`):**
+- Card/table view of implementations with progress bars
+- Filter by status
+- Create implementation dialog (select from won deals)
+- Implementation detail view with milestone checklist
+- Auto-calculate progress from milestone completion
+
+**Sidebar:** Add "Implementasi" nav item in main nav group
+
+**Routing:** Add `/implementations` route in App.tsx
+
+**Translations:** Add ~25 implementation keys (EN/ID)
+
+---
+
+## 4. Client Documents (File Uploads)
+
+**Database Migration:**
+- Create storage bucket `client-documents` (private)
+- Create `client_documents` table: id, client_id (FK clients ON DELETE CASCADE), file_name, file_path, file_size (bigint), mime_type, uploaded_by (uuid), created_at
+- RLS: authenticated users can SELECT, INSERT, DELETE
+- Storage policy: authenticated users can upload/download from `client-documents` bucket
+
+**Frontend (add to `src/pages/ClientDetail.tsx`):**
+- New "Dokumen" tab in the client detail tabs
+- File upload dropzone (accepts PDF, DOCX, images, up to 10MB)
+- File list with name, size, upload date, download button
+- Delete button per file
+
+**Translations:** Add ~10 document keys (EN/ID)
 
 ---
 
 ## Implementation Order
 
-Due to the size, I recommend building these one at a time in this order:
+Execute in this sequence: Meetings → Partners → Implementations → Client Documents
 
-1. **Manajemen Produk** -- foundational, enhances deals
-2. **Manajemen Tugas** -- new table + full CRUD
-3. **Laporan & Analitik** -- reads existing data, no new tables
-4. **Manajemen Tim** -- admin features last
+## Files Modified/Created
 
-## Technical Notes
-
-- All new tables get RLS policies for authenticated users
-- All text in Bahasa Indonesia
-- Dark theme consistent with existing UI
-- New routes added to App.tsx inside the ProtectedRoute layout
-- Database migrations for new tables and enums
-
----
-
-Shall I start with **Manajemen Produk/Layanan** first?
+- **New pages:** `Meetings.tsx`, `Partners.tsx`, `Implementations.tsx`
+- **Modified:** `App.tsx` (3 new routes), `AppSidebar.tsx` (new nav items, enable Rapat), `ClientDetail.tsx` (documents tab), `Deals.tsx` (partner_id field), `translations.ts` (~80 new keys)
+- **Migrations:** 4 separate SQL migrations for tables + storage
 
