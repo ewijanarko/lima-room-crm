@@ -195,7 +195,7 @@ export default function ClientDetail() {
                 <span className="text-lg">{({ call: '📞', email: '✉️', meeting: '🤝', whatsapp: '💬', other: '📝' } as any)[c.type] || '📝'}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{c.subject || t('clientDetail.noSubject')}</p>
-                  {c.summary && <p className="text-xs text-muted-foreground mt-1">{c.summary}</p>}
+                  {c.summary && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{c.summary}</p>}
                   <p className="text-xs text-muted-foreground mt-1">
                     {c.direction === 'outbound' ? t('deals.outbound') : t('deals.inbound')} · {formatDateTime(c.communication_date)}
                   </p>
