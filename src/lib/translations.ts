@@ -470,6 +470,8 @@ const en: Record<keyof typeof id, string> = {
   'comm.inbound': 'Inbound',
   'comm.logging': 'Logging...',
   'comm.log': 'Log Communication',
+  'comm.date': 'Date & Time',
+  'comm.summaryPlaceholder': 'Write communication summary here...',
 
   // Products
   'products.title': 'Products & Services',
