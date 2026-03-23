@@ -264,7 +264,7 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
               {comms.map((c: any) => (
                 <div key={c.id} className="p-3 rounded-md bg-muted/50 text-sm">
                   <p className="font-medium">{c.subject || t('deals.noSubject')}</p>
-                  {c.summary && <p className="text-xs text-muted-foreground mt-1">{c.summary}</p>}
+                  {c.summary && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{c.summary}</p>}
                   <p className="text-xs text-muted-foreground mt-1">{c.type} · {c.direction === 'outbound' ? t('deals.outbound') : t('deals.inbound')} · {formatDateTime(c.communication_date)}</p>
                 </div>
               ))}
