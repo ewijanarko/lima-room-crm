@@ -312,7 +312,7 @@ function DealForm({ clients, products, onSubmit, loading, t }: { clients: any[];
 }
 
 function DealCommForm({ onSubmit, loading, t }: { onSubmit: (d: any) => void; loading: boolean; t: (key: any) => string }) {
-  const [form, setForm] = useState({ type: 'call' as const, direction: 'outbound' as const, subject: '', summary: '' });
+  const [form, setForm] = useState({ type: 'call' as const, direction: 'outbound' as const, subject: '', summary: '', communication_date: new Date().toISOString() });
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
@@ -341,8 +341,12 @@ function DealCommForm({ onSubmit, loading, t }: { onSubmit: (d: any) => void; lo
           </Select>
         </div>
       </div>
+      <div className="space-y-2">
+        <Label>{t('comm.date')}</Label>
+        <Input type="datetime-local" value={form.communication_date.slice(0, 16)} onChange={e => set('communication_date', new Date(e.target.value).toISOString())} />
+      </div>
       <div className="space-y-2"><Label>{t('comm.subject')}</Label><Input value={form.subject} onChange={e => set('subject', e.target.value)} /></div>
-      <div className="space-y-2"><Label>{t('comm.summary')}</Label><Input value={form.summary} onChange={e => set('summary', e.target.value)} /></div>
+      <div className="space-y-2"><Label>{t('comm.summary')}</Label><Textarea value={form.summary} onChange={e => set('summary', e.target.value)} rows={5} placeholder={t('comm.summaryPlaceholder')} /></div>
       <Button type="submit" className="w-full" disabled={loading}>{loading ? t('comm.logging') : t('comm.log')}</Button>
     </form>
   );
