@@ -27,12 +27,14 @@ export function AppSidebar() {
     { titleKey: 'nav.deals' as TranslationKey, url: '/deals', icon: Target },
     { titleKey: 'nav.products' as TranslationKey, url: '/products', icon: Package },
     { titleKey: 'nav.tasks' as TranslationKey, url: '/tasks', icon: ClipboardList },
+    { titleKey: 'nav.implementations' as TranslationKey, url: '/implementations', icon: Rocket },
     { titleKey: 'nav.reports' as TranslationKey, url: '/reports', icon: BarChart3 },
   ];
 
   const secondaryNav = [
+    { titleKey: 'nav.meetings' as TranslationKey, url: '/meetings', icon: Calendar },
+    { titleKey: 'nav.partners' as TranslationKey, url: '/partners', icon: Handshake },
     { titleKey: 'nav.team' as TranslationKey, url: '/team', icon: Users },
-    { titleKey: 'nav.meetings' as TranslationKey, url: '#', icon: Calendar, disabled: true },
   ];
 
   return (
