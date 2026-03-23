@@ -44,6 +44,47 @@ export type Database = {
         }
         Relationships: []
       }
+      client_documents: {
+        Row: {
+          client_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -244,6 +285,7 @@ export type Database = {
           expected_close_date: string | null
           id: string
           is_partner_deal: boolean | null
+          partner_id: string | null
           product: string | null
           stage: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at: string
@@ -259,6 +301,7 @@ export type Database = {
           expected_close_date?: string | null
           id?: string
           is_partner_deal?: boolean | null
+          partner_id?: string | null
           product?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at?: string
@@ -274,6 +317,7 @@ export type Database = {
           expected_close_date?: string | null
           id?: string
           is_partner_deal?: boolean | null
+          partner_id?: string | null
           product?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at?: string
@@ -289,7 +333,214 @@ export type Database = {
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "deals_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      implementation_milestones: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          implementation_id: string
+          status: Database["public"]["Enums"]["milestone_status"]
+          title: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          implementation_id: string
+          status?: Database["public"]["Enums"]["milestone_status"]
+          title: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          implementation_id?: string
+          status?: Database["public"]["Enums"]["milestone_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "implementation_milestones_implementation_id_fkey"
+            columns: ["implementation_id"]
+            isOneToOne: false
+            referencedRelation: "implementations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      implementations: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          id: string
+          notes: string | null
+          progress_percent: number
+          start_date: string | null
+          status: Database["public"]["Enums"]["implementation_status"]
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          id?: string
+          notes?: string | null
+          progress_percent?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["implementation_status"]
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          id?: string
+          notes?: string | null
+          progress_percent?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["implementation_status"]
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "implementations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "implementations_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          location: string | null
+          meeting_date: string
+          related_client_id: string | null
+          related_deal_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          meeting_date: string
+          related_client_id?: string | null
+          related_deal_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          related_client_id?: string | null
+          related_deal_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_related_client_id_fkey"
+            columns: ["related_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_related_deal_id_fkey"
+            columns: ["related_deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          commission_rate: number | null
+          company_name: string
+          contact_name: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          phone: string | null
+          type: Database["public"]["Enums"]["partner_type"]
+          updated_at: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          company_name: string
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          type?: Database["public"]["Enums"]["partner_type"]
+          updated_at?: string
+        }
+        Update: {
+          commission_rate?: number | null
+          company_name?: string
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          type?: Database["public"]["Enums"]["partner_type"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -457,6 +708,13 @@ export type Database = {
         | "negotiation"
         | "won"
         | "lost"
+      implementation_status:
+        | "planning"
+        | "in_progress"
+        | "completed"
+        | "on_hold"
+      milestone_status: "pending" | "completed"
+      partner_type: "referral" | "reseller" | "technology"
       task_priority: "low" | "medium" | "high"
       task_status: "todo" | "in_progress" | "done"
     }
@@ -598,6 +856,14 @@ export const Constants = {
         "won",
         "lost",
       ],
+      implementation_status: [
+        "planning",
+        "in_progress",
+        "completed",
+        "on_hold",
+      ],
+      milestone_status: ["pending", "completed"],
+      partner_type: ["referral", "reseller", "technology"],
       task_priority: ["low", "medium", "high"],
       task_status: ["todo", "in_progress", "done"],
     },
