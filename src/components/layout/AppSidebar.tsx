@@ -71,22 +71,15 @@ export function AppSidebar() {
             <SidebarMenu>
               {secondaryNav.map((item) =>
               <SidebarMenuItem key={item.titleKey}>
-                  {item.disabled ? (
-                    <SidebarMenuButton disabled className="opacity-40 cursor-not-allowed">
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="h-4 w-4 shrink-0" />
                       {!collapsed && <span>{t(item.titleKey)}</span>}
-                    </SidebarMenuButton>
-                  ) : (
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className="hover:bg-sidebar-accent"
-                        activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && <span>{t(item.titleKey)}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  )}
+                    </NavLink>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
             </SidebarMenu>
