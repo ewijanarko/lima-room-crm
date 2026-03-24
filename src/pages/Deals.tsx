@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatIDR, daysSince, stageBorderColor, formatDateTime } from '@/lib/format';
+import { formatIDR, daysSince, stageBorderColor, formatDateTime, formatDate } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
 
 const STAGES = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'] as const;
@@ -247,6 +247,10 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
               <p className="text-muted-foreground">{t('deals.partnerDeal')}</p>
               <p>{deal.is_partner_deal ? t('deals.yes') : t('deals.no')}</p>
             </div>
+            <div>
+              <p className="text-muted-foreground">{t('deals.expectedClose')}</p>
+              <p>{deal.expected_close_date ? formatDate(deal.expected_close_date) : '—'}</p>
+            </div>
           </div>
 
           <Tabs defaultValue="comms">
@@ -278,7 +282,7 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
 }
 
 function DealForm({ clients, products, onSubmit, loading, t }: { clients: any[]; products: any[]; onSubmit: (d: any) => void; loading: boolean; t: (key: any) => string }) {
-  const [form, setForm] = useState({ title: '', client_id: '', stage: 'lead', value: 0, product: '', description: '' });
+  const [form, setForm] = useState({ title: '', client_id: '', stage: 'lead', value: 0, product: '', description: '', expected_close_date: '' });
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
@@ -306,6 +310,10 @@ function DealForm({ clients, products, onSubmit, loading, t }: { clients: any[];
             </SelectContent>
           </Select>
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label>{t('deals.expectedClose')}</Label>
+        <Input type="date" value={form.expected_close_date} onChange={e => set('expected_close_date', e.target.value)} />
       </div>
       <Button type="submit" className="w-full" disabled={loading || !form.client_id}>{loading ? t('deals.creating') : t('deals.createDeal')}</Button>
     </form>
