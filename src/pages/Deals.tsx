@@ -307,6 +307,10 @@ function DealForm({ clients, products, onSubmit, loading, t }: { clients: any[];
           </Select>
         </div>
       </div>
+      <div className="space-y-2">
+        <Label>{t('deals.expectedClose')}</Label>
+        <Input type="date" value={form.expected_close_date} onChange={e => set('expected_close_date', e.target.value)} />
+      </div>
       <Button type="submit" className="w-full" disabled={loading || !form.client_id}>{loading ? t('deals.creating') : t('deals.createDeal')}</Button>
     </form>
   );
