@@ -247,6 +247,10 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
               <p className="text-muted-foreground">{t('deals.partnerDeal')}</p>
               <p>{deal.is_partner_deal ? t('deals.yes') : t('deals.no')}</p>
             </div>
+            <div>
+              <p className="text-muted-foreground">{t('deals.expectedClose')}</p>
+              <p>{deal.expected_close_date ? formatDate(deal.expected_close_date) : '—'}</p>
+            </div>
           </div>
 
           <Tabs defaultValue="comms">
