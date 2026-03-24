@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatIDR, daysSince, stageBorderColor, formatDateTime } from '@/lib/format';
+import { formatIDR, daysSince, stageBorderColor, formatDateTime, formatDate } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
 
 const STAGES = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'] as const;
