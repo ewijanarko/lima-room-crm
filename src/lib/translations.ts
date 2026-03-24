@@ -89,6 +89,7 @@ const id = {
   'deals.creating': 'Membuat...',
   'deals.createDeal': 'Buat Deal',
   'deals.partnerDeal': 'Deal Partner',
+  'deals.expectedClose': 'Tgl. Target Closing',
   'deals.yes': 'Ya',
   'deals.no': 'Tidak',
   'deals.communication': 'Komunikasi',
