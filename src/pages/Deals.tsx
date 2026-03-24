@@ -278,7 +278,7 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
 }
 
 function DealForm({ clients, products, onSubmit, loading, t }: { clients: any[]; products: any[]; onSubmit: (d: any) => void; loading: boolean; t: (key: any) => string }) {
-  const [form, setForm] = useState({ title: '', client_id: '', stage: 'lead', value: 0, product: '', description: '' });
+  const [form, setForm] = useState({ title: '', client_id: '', stage: 'lead', value: 0, product: '', description: '', expected_close_date: '' });
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
