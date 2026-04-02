@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, FileText, Download, Trash2, Upload, Circle, CheckCircle2 } from 'lucide-react';
+import { Plus, FileText, Download, Trash2, Upload, Circle, CheckCircle2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
@@ -89,6 +89,18 @@ export default function DealPhaseTimeline({ dealId, t }: { dealId: string; t: (k
       queryClient.invalidateQueries({ queryKey: ['deal-phases', dealId] });
       setAddDialog(false);
       toast.success(t('phases.added'));
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const updatePhase = useMutation({
+    mutationFn: async ({ phaseId, description }: { phaseId: string; description: string }) => {
+      const { error } = await supabase.from('deal_phases').update({ description }).eq('id', phaseId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deal-phases', dealId] });
+      toast.success(t('phases.updated'));
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -192,6 +204,7 @@ export default function DealPhaseTimeline({ dealId, t }: { dealId: string; t: (k
                 isLast={idx === phases.length - 1}
                 t={t}
                 onDelete={() => deletePhase.mutate(phase.id)}
+                onUpdate={(desc) => updatePhase.mutate({ phaseId: phase.id, description: desc })}
                 onUpload={(file) => uploadDoc.mutate({ phaseId: phase.id, file })}
                 onDownload={handleDownload}
                 onDeleteDoc={(doc) => deleteDoc.mutate(doc)}
@@ -204,11 +217,18 @@ export default function DealPhaseTimeline({ dealId, t }: { dealId: string; t: (k
   );
 }
 
-function PhaseCard({ phase, docs, isLast, t, onDelete, onUpload, onDownload, onDeleteDoc }: {
+function PhaseCard({ phase, docs, isLast, t, onDelete, onUpdate, onUpload, onDownload, onDeleteDoc }: {
   phase: any; docs: any[]; isLast: boolean; t: (key: any) => string;
-  onDelete: () => void; onUpload: (file: File) => void; onDownload: (doc: any) => void; onDeleteDoc: (doc: any) => void;
+  onDelete: () => void; onUpdate: (desc: string) => void; onUpload: (file: File) => void; onDownload: (doc: any) => void; onDeleteDoc: (doc: any) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [editing, setEditing] = useState(false);
+  const [editDesc, setEditDesc] = useState(phase.description || '');
+
+  const handleSave = () => {
+    onUpdate(editDesc);
+    setEditing(false);
+  };
 
   return (
     <div className="relative pl-6 pb-4">
@@ -217,18 +237,33 @@ function PhaseCard({ phase, docs, isLast, t, onDelete, onUpload, onDownload, onD
 
       <div className="rounded-lg border border-border bg-muted/30 p-3">
         <div className="flex items-start justify-between gap-2">
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs">{t(PHASE_KEYS[phase.phase])}</Badge>
               <span className="text-xs text-muted-foreground">{formatDate(phase.phase_date)}</span>
             </div>
-            {phase.description && (
-              <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">{phase.description}</p>
+            {editing ? (
+              <div className="mt-2 space-y-2">
+                <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={4} />
+                <div className="flex gap-1">
+                  <Button size="sm" onClick={handleSave}>{t('phases.save')}</Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setEditing(false); setEditDesc(phase.description || ''); }}>{t('phases.cancel')}</Button>
+                </div>
+              </div>
+            ) : (
+              phase.description && (
+                <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">{phase.description}</p>
+              )
             )}
           </div>
-          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={onDelete}>
-            <Trash2 className="h-3 w-3 text-destructive" />
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditDesc(phase.description || ''); setEditing(true); }}>
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onDelete}>
+              <Trash2 className="h-3 w-3 text-destructive" />
+            </Button>
+          </div>
         </div>
 
         {/* Documents */}
