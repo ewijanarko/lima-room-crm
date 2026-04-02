@@ -276,6 +276,88 @@ export type Database = {
           },
         ]
       }
+      deal_phase_documents: {
+        Row: {
+          created_at: string
+          deal_phase_id: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          deal_phase_id: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          deal_phase_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_phase_documents_deal_phase_id_fkey"
+            columns: ["deal_phase_id"]
+            isOneToOne: false
+            referencedRelation: "deal_phases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_phases: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deal_id: string
+          description: string | null
+          id: string
+          phase: Database["public"]["Enums"]["deal_phase_type"]
+          phase_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deal_id: string
+          description?: string | null
+          id?: string
+          phase: Database["public"]["Enums"]["deal_phase_type"]
+          phase_date?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string
+          description?: string | null
+          id?: string
+          phase?: Database["public"]["Enums"]["deal_phase_type"]
+          phase_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_phases_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           client_id: string
@@ -701,6 +783,16 @@ export type Database = {
       client_status: "active" | "inactive" | "prospect" | "churned"
       communication_direction: "inbound" | "outbound"
       communication_type: "call" | "email" | "meeting" | "whatsapp" | "other"
+      deal_phase_type:
+        | "lead_creation"
+        | "discovery"
+        | "proposal"
+        | "pitching"
+        | "won_deal"
+        | "planning"
+        | "kickoff"
+        | "implementation"
+        | "go_live"
       deal_stage:
         | "lead"
         | "qualified"
@@ -848,6 +940,17 @@ export const Constants = {
       client_status: ["active", "inactive", "prospect", "churned"],
       communication_direction: ["inbound", "outbound"],
       communication_type: ["call", "email", "meeting", "whatsapp", "other"],
+      deal_phase_type: [
+        "lead_creation",
+        "discovery",
+        "proposal",
+        "pitching",
+        "won_deal",
+        "planning",
+        "kickoff",
+        "implementation",
+        "go_live",
+      ],
       deal_stage: [
         "lead",
         "qualified",
