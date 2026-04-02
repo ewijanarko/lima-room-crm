@@ -204,6 +204,7 @@ export default function DealPhaseTimeline({ dealId, t }: { dealId: string; t: (k
                 isLast={idx === phases.length - 1}
                 t={t}
                 onDelete={() => deletePhase.mutate(phase.id)}
+                onUpdate={(desc) => updatePhase.mutate({ phaseId: phase.id, description: desc })}
                 onUpload={(file) => uploadDoc.mutate({ phaseId: phase.id, file })}
                 onDownload={handleDownload}
                 onDeleteDoc={(doc) => deleteDoc.mutate(doc)}
