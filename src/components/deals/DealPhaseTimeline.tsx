@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, FileText, Download, Trash2, Upload, Circle, CheckCircle2 } from 'lucide-react';
+import { Plus, FileText, Download, Trash2, Upload, Circle, CheckCircle2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
