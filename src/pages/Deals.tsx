@@ -17,6 +17,7 @@ import { Plus, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatIDR, daysSince, stageBorderColor, formatDateTime, formatDate } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
+import DealPhaseTimeline from '@/components/deals/DealPhaseTimeline';
 
 const STAGES = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'] as const;
 const STAGE_KEYS: Record<string, TranslationKey> = {
