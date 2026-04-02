@@ -17,6 +17,7 @@ import { Plus, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatIDR, daysSince, stageBorderColor, formatDateTime, formatDate } from '@/lib/format';
 import type { TranslationKey } from '@/lib/translations';
+import DealPhaseTimeline from '@/components/deals/DealPhaseTimeline';
 
 const STAGES = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'] as const;
 const STAGE_KEYS: Record<string, TranslationKey> = {
@@ -253,10 +254,14 @@ function DealSheet({ deal, onClose, onStageChange, t }: { deal: any; onClose: ()
             </div>
           </div>
 
-          <Tabs defaultValue="comms">
+          <Tabs defaultValue="timeline">
             <TabsList className="w-full">
+              <TabsTrigger value="timeline" className="flex-1">{t('phases.title')}</TabsTrigger>
               <TabsTrigger value="comms" className="flex-1">{t('deals.communication')}</TabsTrigger>
             </TabsList>
+            <TabsContent value="timeline" className="mt-3">
+              <DealPhaseTimeline dealId={deal.id} t={t} />
+            </TabsContent>
             <TabsContent value="comms" className="space-y-3 mt-3">
               <Dialog open={commDialog} onOpenChange={setCommDialog}>
                 <DialogTrigger asChild><Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" />{t('deals.logComm')}</Button></DialogTrigger>
