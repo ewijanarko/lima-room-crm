@@ -93,6 +93,18 @@ export default function DealPhaseTimeline({ dealId, t }: { dealId: string; t: (k
     onError: (e: any) => toast.error(e.message),
   });
 
+  const updatePhase = useMutation({
+    mutationFn: async ({ phaseId, description }: { phaseId: string; description: string }) => {
+      const { error } = await supabase.from('deal_phases').update({ description }).eq('id', phaseId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deal-phases', dealId] });
+      toast.success(t('phases.updated'));
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const deletePhase = useMutation({
     mutationFn: async (phaseId: string) => {
       const { error } = await supabase.from('deal_phases').delete().eq('id', phaseId);
