@@ -1,148 +1,204 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatIDR } from '@/lib/format';
-import { Building2, Target, TrendingUp, DollarSign } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { useLanguage } from '@/hooks/useLanguage';
-import type { TranslationKey } from '@/lib/translations';
+import { formatIDR, formatDate, daysBetween } from '@/lib/format';
+import { Target, TrendingUp, DollarSign, Percent } from 'lucide-react';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const STAGE_KEYS: Record<string, TranslationKey> = {
-  lead: 'stage.lead', qualified: 'stage.qualified', proposal: 'stage.proposal',
-  negotiation: 'stage.negotiation', won: 'stage.won', lost: 'stage.lost',
+const EVENT_LABELS: Record<string, string> = {
+  lead_created: 'Lead Dibuat', meeting: 'Pertemuan', discussion: 'Diskusi',
+  proposal_sent: 'Proposal Dikirim', negotiation: 'Negosiasi', document: 'Dokumen',
+  note: 'Catatan', won: 'Deal Menang', lost: 'Deal Kalah',
 };
 
-const STAGE_COLORS: Record<string, string> = {
-  lead: 'hsl(215, 80%, 52%)', qualified: 'hsl(260, 60%, 55%)', proposal: 'hsl(43, 74%, 49%)',
-  negotiation: 'hsl(25, 85%, 55%)', won: 'hsl(160, 60%, 42%)', lost: 'hsl(0, 72%, 51%)',
-};
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0]?.toUpperCase())
+    .join('');
+}
 
 export default function Dashboard() {
-  const { t } = useLanguage();
-
-  const { data: clients } = useQuery({
-    queryKey: ['clients-count'],
-    queryFn: async () => {
-      const { count } = await supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
-      return count || 0;
-    },
-  });
-
-  const { data: deals } = useQuery({
+  const { data: deals = [] } = useQuery({
     queryKey: ['deals-all'],
     queryFn: async () => {
-      const { data } = await supabase.from('deals').select('id, stage, value');
+      const { data } = await supabase
+        .from('deals')
+        .select('id, status, value, created_at, closed_at, client_id, clients(company_name)');
       return data || [];
     },
   });
 
-  const { data: recentComms } = useQuery({
-    queryKey: ['recent-communications'],
+  const { data: events = [] } = useQuery({
+    queryKey: ['deal-events-all'],
     queryFn: async () => {
       const { data } = await supabase
-        .from('communications')
-        .select('id, type, subject, communication_date, client_id, clients(company_name)')
-        .order('communication_date', { ascending: false })
-        .limit(5);
+        .from('deal_events')
+        .select('deal_id, event_type, event_date')
+        .order('event_date', { ascending: true });
       return data || [];
     },
   });
 
-  const openDeals = deals?.filter(d => !['won', 'lost'].includes(d.stage)) || [];
-  const pipelineValue = openDeals.reduce((sum, d) => sum + (d.value || 0), 0);
-  const wonValue = deals?.filter(d => d.stage === 'won').reduce((sum, d) => sum + (d.value || 0), 0) || 0;
+  const openDeals = deals.filter(d => d.status === 'open');
+  const wonDeals = deals.filter(d => d.status === 'won');
+  const lostDeals = deals.filter(d => d.status === 'lost');
 
-  const stageCounts = Object.keys(STAGE_KEYS).map(stage => ({
-    name: t(STAGE_KEYS[stage]),
-    stage,
-    count: deals?.filter(d => d.stage === stage).length || 0,
-    value: deals?.filter(d => d.stage === stage).reduce((s, d) => s + (d.value || 0), 0) || 0,
-  }));
+  const pipelineValue = openDeals.reduce((sum, d) => sum + (d.value || 0), 0);
+  const wonValue = wonDeals.reduce((sum, d) => sum + (d.value || 0), 0);
+  const winRate = wonDeals.length + lostDeals.length > 0
+    ? Math.round((wonDeals.length / (wonDeals.length + lostDeals.length)) * 100)
+    : 0;
+
+  const wonDurations = wonDeals.map(d => daysBetween(d.created_at, d.closed_at || d.created_at));
+  const avgDuration = wonDurations.length > 0
+    ? Math.round(wonDurations.reduce((s, d) => s + d, 0) / wonDurations.length)
+    : 0;
 
   const kpis = [
-    { label: t('dashboard.revenue'), value: formatIDR(wonValue), icon: DollarSign, color: 'text-accent' },
-    { label: t('dashboard.pipelineValue'), value: formatIDR(pipelineValue), icon: TrendingUp, color: 'text-primary' },
-    { label: t('dashboard.activeClients'), value: clients?.toString() || '0', icon: Building2, color: 'text-gold' },
-    { label: t('dashboard.openDeals'), value: openDeals.length.toString(), icon: Target, color: 'text-primary' },
+    { label: 'Revenue Menang', value: formatIDR(wonValue), icon: DollarSign },
+    { label: 'Nilai Pipeline', value: formatIDR(pipelineValue), icon: TrendingUp },
+    { label: 'Rata-rata Durasi Lead → Deal', value: `${avgDuration} hari`, icon: Target },
+    { label: 'Win Rate', value: `${winRate}%`, icon: Percent },
   ];
+
+  const latestEventByDeal = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const e of events) map[e.deal_id] = e.event_type;
+    return map;
+  }, [events]);
+
+  const funnelData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const d of openDeals) {
+      const stage = latestEventByDeal[d.id] || 'lead_created';
+      counts[stage] = (counts[stage] || 0) + 1;
+    }
+    return Object.entries(counts).map(([stage, count]) => ({
+      name: EVENT_LABELS[stage] || stage,
+      count,
+    }));
+  }, [openDeals, latestEventByDeal]);
+
+  const monthlyTrend = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const d of wonDeals) {
+      if (!d.closed_at) continue;
+      const key = new Intl.DateTimeFormat('id-ID', { month: 'short', year: '2-digit' }).format(new Date(d.closed_at));
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    return Object.entries(counts).map(([name, count]) => ({ name, count }));
+  }, [wonDeals]);
+
+  const wonTable = [...wonDeals]
+    .sort((a, b) => new Date(b.closed_at || b.created_at).getTime() - new Date(a.closed_at || a.created_at).getTime())
+    .slice(0, 8);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-black dark:text-black">{t('dashboard.title')}</h1>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} className="bg-card border-border">
+          <Card key={kpi.label}>
             <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{kpi.label}</p>
-                  <p className="text-2xl font-semibold font-mono mt-1">{kpi.value}</p>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{kpi.label}</p>
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <kpi.icon className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <kpi.icon className={`h-8 w-8 ${kpi.color} opacity-70`} />
               </div>
+              <p className="text-xl font-bold mt-3">{kpi.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-card border-border">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('dashboard.dealFunnel')}</CardTitle>
+            <CardTitle className="text-base">Deal Menang per Bulan</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={stageCounts} layout="vertical" margin={{ left: 20 }}>
-                <XAxis type="number" stroke="hsl(220,10%,55%)" fontSize={12} />
-                <YAxis type="category" dataKey="name" stroke="hsl(220,10%,55%)" fontSize={12} width={90} />
-                <Tooltip
-                  contentStyle={{ background: 'hsl(222,25%,14%)', border: '1px solid hsl(222,20%,20%)', borderRadius: 8, color: 'hsl(220,15%,90%)' }}
-                  formatter={(val: number, _name: string, entry: any) => [
-                    `${val} deal (${formatIDR(entry.payload.value)})`,
-                    t('dashboard.count'),
-                  ]}
-                />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {stageCounts.map((entry) => (
-                    <Cell key={entry.stage} fill={STAGE_COLORS[entry.stage]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {monthlyTrend.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={monthlyTrend} margin={{ left: 0, right: 8, top: 8 }}>
+                  <defs>
+                    <linearGradient id="wonGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} axisLine={false} tickLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    cursor={{ stroke: 'hsl(var(--accent))', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    contentStyle={{ background: 'hsl(var(--sidebar-background))', border: 'none', borderRadius: 12, color: 'hsl(0 0% 100%)', padding: '8px 12px' }}
+                    labelStyle={{ color: 'hsl(0 0% 100% / 0.7)', fontSize: 12 }}
+                  />
+                  <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#wonGradient)" dot={{ r: 4, fill: 'hsl(var(--accent))', strokeWidth: 0 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-muted-foreground">Belum ada deal yang menang.</p>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('dashboard.recentComms')}</CardTitle>
+            <CardTitle className="text-base">Deal Terbuka per Tahap</CardTitle>
           </CardHeader>
           <CardContent>
-            {recentComms && recentComms.length > 0 ? (
-              <div className="space-y-3">
-                {recentComms.map((comm: any) => (
-                  <div key={comm.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/50">
-                    <MessageIcon type={comm.type} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{comm.subject || t('dashboard.noSubject')}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {comm.clients?.company_name} · {new Date(comm.communication_date).toLocaleDateString('id-ID')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {funnelData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={funnelData} layout="vertical" margin={{ left: 20 }}>
+                  <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} width={110} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'hsl(var(--muted))' }}
+                    contentStyle={{ background: 'hsl(var(--sidebar-background))', border: 'none', borderRadius: 12, color: 'hsl(0 0% 100%)', padding: '8px 12px' }}
+                  />
+                  <Bar dataKey="count" radius={[0, 8, 8, 0]} fill="hsl(var(--primary))" barSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-muted-foreground">{t('dashboard.noComms')}</p>
+              <p className="text-sm text-muted-foreground">Belum ada deal terbuka.</p>
             )}
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Deal Menang Terbaru - Durasi Lead ke Deal</CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          {wonTable.length > 0 ? (
+            <div className="divide-y divide-border">
+              {wonTable.map((d: any) => (
+                <div key={d.id} className="flex items-center gap-3 px-3 py-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                    {getInitials(d.clients?.company_name || '?')}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{d.clients?.company_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Lead {formatDate(d.created_at)} · Menang {d.closed_at ? formatDate(d.closed_at) : '-'} · {daysBetween(d.created_at, d.closed_at || d.created_at)} hari
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold">{formatIDR(d.value || 0)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="px-3 py-2 text-sm text-muted-foreground">Belum ada deal yang menang.</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-}
-
-function MessageIcon({ type }: { type: string }) {
-  const icons: Record<string, string> = { call: '📞', email: '✉️', meeting: '🤝', whatsapp: '💬', other: '📝' };
-  return <span className="text-lg">{icons[type] || '📝'}</span>;
 }

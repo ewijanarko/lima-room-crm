@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
-import { LanguageProvider } from "@/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Login from "@/pages/Login";
@@ -13,13 +12,6 @@ import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
 import ClientDetail from "@/pages/ClientDetail";
 import Deals from "@/pages/Deals";
-import Products from "@/pages/Products";
-import Tasks from "@/pages/Tasks";
-import Reports from "@/pages/Reports";
-import Team from "@/pages/Team";
-import Meetings from "@/pages/Meetings";
-import Partners from "@/pages/Partners";
-import Implementations from "@/pages/Implementations";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,32 +20,23 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ThemeProvider>
-        <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/clients/:id" element={<ClientDetail />} />
-                  <Route path="/deals" element={<Deals />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/meetings" element={<Meetings />} />
-                  <Route path="/partners" element={<Partners />} />
-                  <Route path="/implementations" element={<Implementations />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/clients/:id" element={<ClientDetail />} />
+                <Route path="/deals" element={<Deals />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
       </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
