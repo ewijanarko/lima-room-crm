@@ -1,6 +1,7 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,73 +12,45 @@ import {
   useSidebar } from
 '@/components/ui/sidebar';
 import { NavLink } from '@/components/NavLink';
-import { LayoutDashboard, Building2, Target, Package, ClipboardList, BarChart3, Users, Calendar, Handshake, Rocket } from 'lucide-react';
-import { useLanguage } from '@/hooks/useLanguage';
+import { LayoutDashboard, Building2, Target } from 'lucide-react';
 import logo from '@/assets/Logo_Lima_Ruang_Baru_Transparent.png';
-import type { TranslationKey } from '@/lib/translations';
+
+const mainNav = [
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'Klien', url: '/clients', icon: Building2 },
+  { title: 'Deal', url: '/deals', icon: Target },
+];
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { t } = useLanguage();
   const collapsed = state === 'collapsed';
-
-  const mainNav = [
-    { titleKey: 'nav.dashboard' as TranslationKey, url: '/dashboard', icon: LayoutDashboard },
-    { titleKey: 'nav.clients' as TranslationKey, url: '/clients', icon: Building2 },
-    { titleKey: 'nav.deals' as TranslationKey, url: '/deals', icon: Target },
-    { titleKey: 'nav.products' as TranslationKey, url: '/products', icon: Package },
-    { titleKey: 'nav.tasks' as TranslationKey, url: '/tasks', icon: ClipboardList },
-    { titleKey: 'nav.implementations' as TranslationKey, url: '/implementations', icon: Rocket },
-    { titleKey: 'nav.reports' as TranslationKey, url: '/reports', icon: BarChart3 },
-  ];
-
-  const secondaryNav = [
-    { titleKey: 'nav.meetings' as TranslationKey, url: '/meetings', icon: Calendar },
-    { titleKey: 'nav.partners' as TranslationKey, url: '/partners', icon: Handshake },
-    { titleKey: 'nav.team' as TranslationKey, url: '/team', icon: Users },
-  ];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="p-4 flex items-center gap-3">
-        <img src={logo} alt="Lima Ruang" className="h-32 w-32 shrink-0 object-contain" />
+      <SidebarHeader className="px-4 pt-5 pb-3">
+        <div className="flex items-start">
+          <img
+            src={logo}
+            alt="Lima Ruang"
+            className={collapsed ? 'h-8 w-8 shrink-0 object-contain' : 'h-[9rem] w-[9rem] shrink-0 object-contain'}
+          />
+        </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.main')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/50">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               {mainNav.map((item) =>
-              <SidebarMenuItem key={item.titleKey}>
-                  <SidebarMenuButton asChild>
+              <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild size="lg">
                     <NavLink
                     to={item.url}
-                    className="hover:bg-sidebar-accent"
-                    activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                    className="rounded-xl px-3 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+                    activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                       <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{t(item.titleKey)}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.other')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryNav.map((item) =>
-              <SidebarMenuItem key={item.titleKey}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{t(item.titleKey)}</span>}
+                      {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -86,5 +59,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {!collapsed && (
+        <SidebarFooter className="p-0">
+          <div className="relative h-36 overflow-hidden">
+            <div className="absolute -left-8 -bottom-8 h-32 w-32 rounded-full bg-sidebar-primary/25" />
+            <div className="absolute left-6 bottom-2 h-16 w-16 rounded-full bg-sidebar-primary/60" />
+            <div className="absolute left-14 top-4 h-20 w-20 rounded-full border-[3px] border-gold/70" />
+            <div className="absolute right-10 top-8 h-3 w-3 rotate-12 rounded-sm bg-sidebar-primary/70" />
+            <div className="absolute right-16 bottom-10 h-2.5 w-2.5 rotate-45 rounded-sm bg-gold/60" />
+            <div className="absolute right-6 bottom-4 h-4 w-4 rounded-full bg-sidebar-accent" />
+          </div>
+        </SidebarFooter>
+      )}
     </Sidebar>);
 }

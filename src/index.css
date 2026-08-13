@@ -6,76 +6,73 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    --background: 160 25% 97%;
+    --foreground: 174 35% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card-foreground: 174 35% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
-    --primary: 215 80% 52%;
+    --popover-foreground: 174 35% 10%;
+    --primary: 160 55% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 25% 10%;
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 46%;
-    --accent: 170 55% 42%;
+    --secondary: 160 20% 93%;
+    --secondary-foreground: 174 35% 10%;
+    --muted: 160 20% 95%;
+    --muted-foreground: 174 12% 45%;
+    --accent: 152 65% 42%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 215 80% 52%;
-    --radius: 0.5rem;
-    --gold: 43 74% 49%;
+    --border: 160 15% 89%;
+    --input: 160 15% 89%;
+    --ring: 152 65% 42%;
+    --radius: 1rem;
+    --gold: 43 80% 55%;
     --gold-foreground: 0 0% 100%;
-    --sidebar-background: 222 30% 12%;
-    --sidebar-foreground: 220 15% 75%;
-    --sidebar-primary: 215 80% 52%;
+    --sidebar-background: 174 47% 12%;
+    --sidebar-foreground: 174 15% 72%;
+    --sidebar-primary: 152 65% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 18%;
-    --sidebar-accent-foreground: 220 15% 90%;
-    --sidebar-border: 222 20% 20%;
-    --sidebar-ring: 215 80% 52%;
+    --sidebar-accent: 174 30% 22%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 174 30% 20%;
+    --sidebar-ring: 152 65% 42%;
 
-    /* Stage colors */
-    --stage-lead: 215 80% 52%;
-    --stage-qualified: 260 60% 55%;
-    --stage-proposal: 43 74% 49%;
-    --stage-negotiation: 25 85% 55%;
-    --stage-won: 160 60% 42%;
-    --stage-lost: 0 72% 51%;
+    /* Deal status colors */
+    --status-open: 215 80% 52%;
+    --status-won: 152 65% 38%;
+    --status-lost: 0 72% 51%;
   }
 
   .dark {
-    --background: 222 30% 8%;
-    --foreground: 220 15% 90%;
-    --card: 222 25% 12%;
-    --card-foreground: 220 15% 90%;
-    --popover: 222 25% 14%;
-    --popover-foreground: 220 15% 90%;
-    --primary: 215 80% 52%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 20% 18%;
-    --secondary-foreground: 220 15% 90%;
-    --muted: 222 20% 16%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 170 55% 42%;
-    --accent-foreground: 0 0% 100%;
+    --background: 174 35% 7%;
+    --foreground: 160 15% 90%;
+    --card: 174 30% 10%;
+    --card-foreground: 160 15% 90%;
+    --popover: 174 30% 12%;
+    --popover-foreground: 160 15% 90%;
+    --primary: 152 60% 45%;
+    --primary-foreground: 174 35% 8%;
+    --secondary: 174 25% 16%;
+    --secondary-foreground: 160 15% 90%;
+    --muted: 174 25% 15%;
+    --muted-foreground: 160 10% 60%;
+    --accent: 152 65% 45%;
+    --accent-foreground: 174 35% 8%;
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 222 20% 20%;
-    --input: 222 20% 20%;
-    --ring: 215 80% 52%;
-    --gold: 43 74% 49%;
+    --border: 174 25% 18%;
+    --input: 174 25% 18%;
+    --ring: 152 65% 45%;
+    --gold: 43 80% 55%;
     --gold-foreground: 0 0% 100%;
-    --sidebar-background: 222 35% 7%;
-    --sidebar-foreground: 220 15% 65%;
-    --sidebar-primary: 215 80% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 14%;
-    --sidebar-accent-foreground: 220 15% 90%;
-    --sidebar-border: 222 25% 15%;
-    --sidebar-ring: 215 80% 52%;
+    --sidebar-background: 174 50% 6%;
+    --sidebar-foreground: 174 12% 65%;
+    --sidebar-primary: 152 65% 45%;
+    --sidebar-primary-foreground: 174 35% 8%;
+    --sidebar-accent: 174 30% 16%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 174 25% 16%;
+    --sidebar-ring: 152 65% 45%;
   }
 }
 

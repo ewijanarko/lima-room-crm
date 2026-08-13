@@ -35,13 +35,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        stage: {
-          lead: "hsl(var(--stage-lead))",
-          qualified: "hsl(var(--stage-qualified))",
-          proposal: "hsl(var(--stage-proposal))",
-          negotiation: "hsl(var(--stage-negotiation))",
-          won: "hsl(var(--stage-won))",
-          lost: "hsl(var(--stage-lost))",
+        status: {
+          open: "hsl(var(--status-open))",
+          won: "hsl(var(--status-won))",
+          lost: "hsl(var(--status-lost))",
         },
       },
       borderRadius: {

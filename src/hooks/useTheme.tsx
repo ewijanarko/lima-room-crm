@@ -3,14 +3,14 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 type Theme = 'dark' | 'light';
 
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme') as Theme;
-    return saved || 'dark';
+    return saved || 'light';
   });
 
   useEffect(() => {
