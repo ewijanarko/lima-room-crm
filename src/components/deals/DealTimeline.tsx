@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,10 +54,17 @@ export default function DealTimeline({ dealId }: { dealId: string }) {
         .from('deal_events')
         .select('*')
         .eq('deal_id', dealId)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: false });
       return data || [];
     },
   });
+
+  // Sorted defensively client-side (newest first) regardless of query cache
+  // or insertion order, so backdated events always display in true date order.
+  const sortedEvents = useMemo(
+    () => [...events].sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()),
+    [events],
+  );
 
   const { data: eventDocs = [] } = useQuery({
     queryKey: ['deal-event-docs', dealId],
@@ -177,20 +184,20 @@ export default function DealTimeline({ dealId }: { dealId: string }) {
         </Dialog>
       </div>
 
-      {events.length === 0 ? (
+      {sortedEvents.length === 0 ? (
         <p className="text-sm text-muted-foreground">Belum ada peristiwa tercatat.</p>
       ) : (
         <div className="relative ml-3">
           <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
 
-          {events.map((event: any, idx: number) => {
+          {sortedEvents.map((event: any, idx: number) => {
             const docs = eventDocs.filter((d: any) => d.deal_event_id === event.id);
             return (
               <EventCard
                 key={event.id}
                 event={event}
                 docs={docs}
-                isLast={idx === events.length - 1}
+                isLast={idx === sortedEvents.length - 1}
                 onDelete={() => deleteEvent.mutate(event.id)}
                 onUpdate={(desc) => updateEvent.mutate({ eventId: event.id, description: desc })}
                 onUpload={(file) => uploadDoc.mutate({ eventId: event.id, file })}
