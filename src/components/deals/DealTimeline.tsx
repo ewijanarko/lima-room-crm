@@ -12,23 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, FileText, Download, Trash2, Upload, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDateTime, formatIDR } from '@/lib/format';
-
-const EVENT_TYPES = [
-  'lead_created', 'meeting', 'discussion', 'proposal_sent',
-  'negotiation', 'document', 'note', 'won', 'lost',
-] as const;
-
-const EVENT_LABELS: Record<string, string> = {
-  lead_created: 'Lead Dibuat',
-  meeting: 'Pertemuan',
-  discussion: 'Diskusi',
-  proposal_sent: 'Proposal Dikirim',
-  negotiation: 'Negosiasi',
-  document: 'Dokumen',
-  note: 'Catatan',
-  won: 'Deal Menang',
-  lost: 'Deal Kalah',
-};
+import { EVENT_TYPES, EVENT_LABELS, LOST_REASONS, LOST_REASON_LABELS } from '@/lib/deal';
 
 const EVENT_COLORS: Record<string, string> = {
   lead_created: 'bg-blue-500',
@@ -87,7 +71,7 @@ export default function DealTimeline({ dealId }: { dealId: string }) {
   };
 
   const addEvent = useMutation({
-    mutationFn: async (form: { event_type: string; event_date: string; title: string; description: string; amount: string }) => {
+    mutationFn: async (form: { event_type: string; event_date: string; title: string; description: string; amount: string; lost_reason: string }) => {
       const { error } = await supabase.from('deal_events').insert({
         deal_id: dealId,
         event_type: form.event_type as any,
@@ -95,6 +79,7 @@ export default function DealTimeline({ dealId }: { dealId: string }) {
         title: form.title || null,
         description: form.description || null,
         amount: form.amount ? parseInt(form.amount) : null,
+        lost_reason: form.event_type === 'lost' && form.lost_reason ? (form.lost_reason as any) : null,
         created_by: user?.id,
       });
       if (error) throw error;
@@ -237,6 +222,11 @@ function EventCard({ event, docs, onDelete, onUpdate, onUpload, onDownload, onDe
               {event.title && <span className="text-sm font-medium">{event.title}</span>}
               <span className="text-xs text-muted-foreground">{formatDateTime(event.event_date)}</span>
               {event.amount != null && <span className="text-xs text-muted-foreground">{formatIDR(event.amount)}</span>}
+              {event.lost_reason && (
+                <Badge className="border-transparent bg-destructive/10 text-destructive text-xs">
+                  {LOST_REASON_LABELS[event.lost_reason]}
+                </Badge>
+              )}
             </div>
             {editing ? (
               <div className="mt-2 space-y-2">
@@ -295,9 +285,10 @@ function EventCard({ event, docs, onDelete, onUpdate, onUpload, onDownload, onDe
 function EventForm({ onSubmit, loading }: { onSubmit: (d: any) => void; loading: boolean }) {
   const [form, setForm] = useState({
     event_type: '', event_date: new Date().toISOString().slice(0, 16),
-    title: '', description: '', amount: '',
+    title: '', description: '', amount: '', lost_reason: '',
   });
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+  const isLost = form.event_type === 'lost';
   return (
     <form onSubmit={e => { e.preventDefault(); if (form.event_type) onSubmit(form); }} className="space-y-3">
       <div className="space-y-2">
@@ -309,6 +300,17 @@ function EventForm({ onSubmit, loading }: { onSubmit: (d: any) => void; loading:
           </SelectContent>
         </Select>
       </div>
+      {isLost && (
+        <div className="space-y-2">
+          <Label>Alasan Kalah *</Label>
+          <Select value={form.lost_reason} onValueChange={v => set('lost_reason', v)}>
+            <SelectTrigger><SelectValue placeholder="Pilih alasan" /></SelectTrigger>
+            <SelectContent>
+              {LOST_REASONS.map(r => <SelectItem key={r} value={r}>{LOST_REASON_LABELS[r]}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div className="space-y-2">
         <Label>Tanggal & Waktu</Label>
         <Input type="datetime-local" value={form.event_date} onChange={e => set('event_date', e.target.value)} />
@@ -325,7 +327,7 @@ function EventForm({ onSubmit, loading }: { onSubmit: (d: any) => void; loading:
         <Label>Catatan</Label>
         <Textarea value={form.description} onChange={e => set('description', e.target.value)} rows={5} placeholder="Detail pertemuan, hasil diskusi, dsb." />
       </div>
-      <Button type="submit" className="w-full" disabled={loading || !form.event_type}>
+      <Button type="submit" className="w-full" disabled={loading || !form.event_type || (isLost && !form.lost_reason)}>
         {loading ? 'Menambahkan...' : 'Tambah Peristiwa'}
       </Button>
     </form>

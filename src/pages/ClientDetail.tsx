@@ -14,10 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ArrowLeft, Plus, User, Phone, Mail, Upload, Download, Trash2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatIDR, formatDateTime, clientStatusPillClass, dealStatusPillClass } from '@/lib/format';
-
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Aktif', prospect: 'Prospek', inactive: 'Tidak Aktif', churned: 'Churned',
-};
+import { CLIENT_STATUS_LABELS as STATUS_LABELS, LEAD_SOURCE_LABELS } from '@/lib/client';
 
 const DEAL_STATUS_LABELS: Record<string, string> = { open: 'Terbuka', won: 'Menang', lost: 'Kalah' };
 
@@ -95,15 +92,34 @@ export default function ClientDetail() {
                 {client.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" />{client.phone}</div>}
                 {client.city && <p className="text-muted-foreground">📍 {client.city}</p>}
                 {client.address && <p className="text-muted-foreground">{client.address}</p>}
-                {client.website && <a href={client.website} target="_blank" className="text-primary hover:underline">{client.website}</a>}
+                {client.website && <a href={client.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{client.website}</a>}
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
               <CardHeader><CardTitle className="text-base">Ringkasan Cepat</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
+                <p>
+                  Sumber Lead:{' '}
+                  <span className="font-medium">
+                    {client.lead_source ? LEAD_SOURCE_LABELS[client.lead_source] : 'Belum diisi'}
+                  </span>
+                  {client.lead_source_detail && (
+                    <span className="text-muted-foreground"> ({client.lead_source_detail})</span>
+                  )}
+                </p>
                 <p>Total Deal: <span className="font-medium">{deals.length}</span></p>
                 <p>Total Nilai: <span className="font-medium">{formatIDR(deals.reduce((s, d) => s + (d.value || 0), 0))}</span></p>
                 <p>Menang: <span className="font-medium">{formatIDR(deals.filter(d => d.status === 'won').reduce((s, d) => s + (d.value || 0), 0))}</span></p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border md:col-span-2">
+              <CardHeader><CardTitle className="text-base">Catatan</CardTitle></CardHeader>
+              <CardContent className="text-sm">
+                {client.notes ? (
+                  <p className="whitespace-pre-line text-muted-foreground">{client.notes}</p>
+                ) : (
+                  <p className="text-muted-foreground">Belum ada catatan. Tambahkan lewat tombol edit di halaman daftar Client.</p>
+                )}
               </CardContent>
             </Card>
           </div>

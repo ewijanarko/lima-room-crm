@@ -60,13 +60,14 @@ export type Database = {
           address: string | null
           city: string | null
           company_name: string
-          contact_name: string | null
           country: string | null
           created_at: string
           created_by: string | null
           email: string | null
           id: string
           industry: string | null
+          lead_source: Database["public"]["Enums"]["client_lead_source"] | null
+          lead_source_detail: string | null
           notes: string | null
           phone: string | null
           status: Database["public"]["Enums"]["client_status"]
@@ -77,13 +78,14 @@ export type Database = {
           address?: string | null
           city?: string | null
           company_name: string
-          contact_name?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
           id?: string
           industry?: string | null
+          lead_source?: Database["public"]["Enums"]["client_lead_source"] | null
+          lead_source_detail?: string | null
           notes?: string | null
           phone?: string | null
           status?: Database["public"]["Enums"]["client_status"]
@@ -94,13 +96,14 @@ export type Database = {
           address?: string | null
           city?: string | null
           company_name?: string
-          contact_name?: string | null
           country?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
           id?: string
           industry?: string | null
+          lead_source?: Database["public"]["Enums"]["client_lead_source"] | null
+          lead_source_detail?: string | null
           notes?: string | null
           phone?: string | null
           status?: Database["public"]["Enums"]["client_status"]
@@ -204,6 +207,7 @@ export type Database = {
           event_date: string
           event_type: Database["public"]["Enums"]["deal_event_type"]
           id: string
+          lost_reason: Database["public"]["Enums"]["deal_lost_reason"] | null
           title: string | null
           updated_at: string
         }
@@ -216,6 +220,7 @@ export type Database = {
           event_date?: string
           event_type: Database["public"]["Enums"]["deal_event_type"]
           id?: string
+          lost_reason?: Database["public"]["Enums"]["deal_lost_reason"] | null
           title?: string | null
           updated_at?: string
         }
@@ -228,6 +233,7 @@ export type Database = {
           event_date?: string
           event_type?: Database["public"]["Enums"]["deal_event_type"]
           id?: string
+          lost_reason?: Database["public"]["Enums"]["deal_lost_reason"] | null
           title?: string | null
           updated_at?: string
         }
@@ -250,6 +256,7 @@ export type Database = {
           description: string | null
           expected_close_date: string | null
           id: string
+          lost_reason: Database["public"]["Enums"]["deal_lost_reason"] | null
           status: Database["public"]["Enums"]["deal_status"]
           title: string
           updated_at: string
@@ -263,6 +270,7 @@ export type Database = {
           description?: string | null
           expected_close_date?: string | null
           id?: string
+          lost_reason?: Database["public"]["Enums"]["deal_lost_reason"] | null
           status?: Database["public"]["Enums"]["deal_status"]
           title: string
           updated_at?: string
@@ -276,6 +284,7 @@ export type Database = {
           description?: string | null
           expected_close_date?: string | null
           id?: string
+          lost_reason?: Database["public"]["Enums"]["deal_lost_reason"] | null
           status?: Database["public"]["Enums"]["deal_status"]
           title?: string
           updated_at?: string
@@ -326,6 +335,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      client_lead_source:
+        | "referral"
+        | "partner"
+        | "outreach"
+        | "event"
+        | "inbound"
+        | "other"
       client_status: "active" | "inactive" | "prospect" | "churned"
       deal_event_type:
         | "lead_created"
@@ -337,6 +353,13 @@ export type Database = {
         | "note"
         | "won"
         | "lost"
+      deal_lost_reason:
+        | "price"
+        | "competitor"
+        | "timing"
+        | "no_budget"
+        | "no_decision"
+        | "other"
       deal_status: "open" | "won" | "lost"
     }
     CompositeTypes: {
@@ -465,6 +488,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      client_lead_source: [
+        "referral",
+        "partner",
+        "outreach",
+        "event",
+        "inbound",
+        "other",
+      ],
       client_status: ["active", "inactive", "prospect", "churned"],
       deal_event_type: [
         "lead_created",
@@ -476,6 +507,14 @@ export const Constants = {
         "note",
         "won",
         "lost",
+      ],
+      deal_lost_reason: [
+        "price",
+        "competitor",
+        "timing",
+        "no_budget",
+        "no_decision",
+        "other",
       ],
       deal_status: ["open", "won", "lost"],
     },

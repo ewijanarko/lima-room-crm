@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatIDR, formatDate, daysBetween } from '@/lib/format';
+import { EVENT_LABELS, STAGE_ORDER } from '@/lib/deal';
+import { LEAD_SOURCES, LEAD_SOURCE_LABELS } from '@/lib/client';
 import { Target, TrendingUp, DollarSign, Percent, ChevronRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
@@ -46,6 +48,25 @@ export default function Dashboard() {
       const { data } = await supabase
         .from('deals')
         .select('id, title, status, value, created_at, closed_at, client_id, clients(company_name)');
+      return data || [];
+    },
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients-lead-source'],
+    queryFn: async () => {
+      const { data } = await supabase.from('clients').select('id, lead_source');
+      return data || [];
+    },
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['deal-events-all'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('deal_events')
+        .select('deal_id, event_type, event_date')
+        .order('event_date', { ascending: true });
       return data || [];
     },
   });
@@ -94,6 +115,18 @@ export default function Dashboard() {
     return monthRange.map(key => ({ name: monthLabel(key), count: counts[key] || 0 }));
   }, [wonDeals, monthRange]);
 
+  // Which stage each open deal currently sits in, taken from its latest event.
+  const stageSummary = useMemo(() => {
+    const latest: Record<string, string> = {};
+    for (const e of events) latest[e.deal_id] = e.event_type;
+    const counts: Record<string, number> = {};
+    for (const d of openDeals) {
+      const stage = latest[d.id] || 'lead_created';
+      counts[stage] = (counts[stage] || 0) + 1;
+    }
+    return STAGE_ORDER.filter(s => counts[s]).map(s => ({ stage: s, count: counts[s] }));
+  }, [events, openDeals]);
+
   const monthlyOpen = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const d of openDeals) {
@@ -102,6 +135,26 @@ export default function Dashboard() {
     }
     return monthRange.map(key => ({ name: monthLabel(key), count: counts[key] || 0 }));
   }, [openDeals, monthRange]);
+
+  // Which channels actually produce closings, not just leads.
+  const leadSourceStats = useMemo(() => {
+    const sourceByClient: Record<string, string> = {};
+    for (const c of clients) if (c.lead_source) sourceByClient[c.id] = c.lead_source;
+
+    const stats: Record<string, { clients: number; won: number; wonValue: number }> = {};
+    for (const c of clients) {
+      if (!c.lead_source) continue;
+      stats[c.lead_source] = stats[c.lead_source] || { clients: 0, won: 0, wonValue: 0 };
+      stats[c.lead_source].clients += 1;
+    }
+    for (const d of wonDeals) {
+      const source = sourceByClient[d.client_id];
+      if (!source) continue;
+      stats[source].won += 1;
+      stats[source].wonValue += d.value || 0;
+    }
+    return LEAD_SOURCES.filter(s => stats[s]).map(s => ({ source: s, ...stats[s] }));
+  }, [clients, wonDeals]);
 
   const wonTable = [...wonDeals]
     .sort((a, b) => new Date(b.closed_at || b.created_at).getTime() - new Date(a.closed_at || a.created_at).getTime())
@@ -133,6 +186,24 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {stageSummary.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Posisi Deal Terbuka Saat Ini</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              {stageSummary.map(({ stage, count }) => (
+                <div key={stage} className="flex items-center gap-2.5 rounded-xl border border-border px-4 py-2.5">
+                  <span className="text-2xl font-bold leading-none text-primary">{count}</span>
+                  <span className="text-sm text-muted-foreground">{EVENT_LABELS[stage]}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -211,6 +282,38 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {leadSourceStats.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Sumber Lead - Channel Mana yang Menghasilkan Deal</CardTitle>
+          </CardHeader>
+          <CardContent className="px-3 pb-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-medium">Sumber</th>
+                    <th className="text-right p-3 font-medium">Client</th>
+                    <th className="text-right p-3 font-medium">Deal Menang</th>
+                    <th className="text-right p-3 font-medium">Nilai Menang</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leadSourceStats.map(s => (
+                    <tr key={s.source} className="border-b last:border-0">
+                      <td className="p-3 font-medium">{LEAD_SOURCE_LABELS[s.source]}</td>
+                      <td className="p-3 text-right text-muted-foreground">{s.clients}</td>
+                      <td className="p-3 text-right text-muted-foreground">{s.won}</td>
+                      <td className="p-3 text-right font-medium">{formatIDR(s.wonValue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog open={!!detailOpen} onOpenChange={(open) => !open && setDetailOpen(null)}>
         <DialogContent className="bg-card border-border max-w-2xl">

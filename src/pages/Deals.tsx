@@ -10,20 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Plus } from 'lucide-react';
+import { Plus, AlarmClock, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatIDR, daysSince, daysBetween, formatDate, dealStatusPillClass } from '@/lib/format';
+import { EVENT_LABELS, LOST_REASON_LABELS, STALE_AFTER_DAYS } from '@/lib/deal';
 import DealTimeline from '@/components/deals/DealTimeline';
 
 const STATUS_LABELS: Record<string, string> = { open: 'Terbuka', won: 'Menang', lost: 'Kalah' };
 const STATUS_FILTERS = ['all', 'open', 'won', 'lost'] as const;
 const STATUS_FILTER_LABELS: Record<string, string> = { all: 'Semua', open: 'Terbuka', won: 'Menang', lost: 'Kalah' };
-
-const EVENT_LABELS: Record<string, string> = {
-  lead_created: 'Lead Dibuat', meeting: 'Pertemuan', discussion: 'Diskusi',
-  proposal_sent: 'Proposal Dikirim', negotiation: 'Negosiasi', document: 'Dokumen',
-  note: 'Catatan', won: 'Deal Menang', lost: 'Deal Kalah',
-};
 
 export default function Deals() {
   const { user } = useAuth();
@@ -55,9 +50,10 @@ export default function Deals() {
     },
   });
 
+  // Events arrive oldest-first, so the last one written per deal is the latest.
   const latestEventByDeal = useMemo(() => {
-    const map: Record<string, string> = {};
-    for (const e of allEvents) map[e.deal_id] = e.event_type;
+    const map: Record<string, { type: string; date: string }> = {};
+    for (const e of allEvents) map[e.deal_id] = { type: e.event_type, date: e.event_date };
     return map;
   }, [allEvents]);
 
@@ -96,6 +92,19 @@ export default function Deals() {
 
   const filteredDeals = deals.filter(d => statusFilter === 'all' || d.status === statusFilter);
 
+  // Only open deals can need chasing: quiet for too long, or past target closing.
+  const followUp = (deal: any) => {
+    if (deal.status !== 'open') return null;
+    const lastActivity = latestEventByDeal[deal.id]?.date || deal.created_at;
+    const quietFor = daysSince(lastActivity);
+    const overdue = deal.expected_close_date && new Date(deal.expected_close_date) < new Date();
+    if (overdue) return { kind: 'overdue' as const, quietFor };
+    if (quietFor >= STALE_AFTER_DAYS) return { kind: 'stale' as const, quietFor };
+    return null;
+  };
+
+  const needsFollowUp = deals.filter(d => followUp(d) !== null).length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -119,6 +128,15 @@ export default function Deals() {
         </div>
       </div>
 
+      {needsFollowUp > 0 && (
+        <div className="flex items-center gap-2 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm">
+          <AlarmClock className="h-4 w-4 shrink-0 text-gold" />
+          <span>
+            <strong>{needsFollowUp} deal</strong> perlu tindak lanjut: lewat target closing, atau tidak ada peristiwa baru lebih dari {STALE_AFTER_DAYS} hari.
+          </span>
+        </div>
+      )}
+
       <div className="rounded-lg border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -132,18 +150,40 @@ export default function Deals() {
             </tr>
           </thead>
           <tbody>
-            {filteredDeals.map(deal => (
+            {filteredDeals.map(deal => {
+              const flag = followUp(deal);
+              return (
               <tr key={deal.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedDealId(deal.id)}>
-                <td className="p-3 font-medium">{deal.title}</td>
+                <td className="p-3 font-medium">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>{deal.title}</span>
+                    {flag?.kind === 'overdue' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        <CalendarClock className="h-3 w-3" />Lewat target
+                      </span>
+                    )}
+                    {flag?.kind === 'stale' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-xs font-medium text-gold">
+                        <AlarmClock className="h-3 w-3" />Diam {flag.quietFor} hari
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td className="p-3 text-muted-foreground">{(deal as any).clients?.company_name}</td>
-                <td className="p-3"><Badge className={`border-transparent ${dealStatusPillClass(deal.status)}`}>{STATUS_LABELS[deal.status]}</Badge></td>
-                <td className="p-3 text-muted-foreground">{EVENT_LABELS[latestEventByDeal[deal.id]] || '-'}</td>
+                <td className="p-3">
+                  <Badge className={`border-transparent ${dealStatusPillClass(deal.status)}`}>{STATUS_LABELS[deal.status]}</Badge>
+                  {deal.status === 'lost' && (deal as any).lost_reason && (
+                    <span className="ml-2 text-xs text-muted-foreground">{LOST_REASON_LABELS[(deal as any).lost_reason]}</span>
+                  )}
+                </td>
+                <td className="p-3 text-muted-foreground">{EVENT_LABELS[latestEventByDeal[deal.id]?.type] || '-'}</td>
                 <td className="p-3 text-right font-medium">{formatIDR(deal.value || 0)}</td>
                 <td className="p-3 text-right text-muted-foreground">
                   {deal.status === 'open' ? daysSince(deal.created_at) : daysBetween(deal.created_at, deal.closed_at || deal.created_at)}
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {filteredDeals.length === 0 && (
               <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Belum ada deal.</td></tr>
             )}

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -14,15 +15,14 @@ import { Plus, Search, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import { clientStatusPillClass } from '@/lib/format';
+import {
+  CLIENT_STATUS_LABELS as STATUS_LABELS,
+  LEAD_SOURCES,
+  LEAD_SOURCE_LABELS,
+  LEAD_SOURCE_DETAIL_HINT,
+} from '@/lib/client';
 
 type Client = Tables<'clients'>;
-
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Aktif',
-  prospect: 'Prospek',
-  inactive: 'Tidak Aktif',
-  churned: 'Churned',
-};
 
 export default function Clients() {
   const { user } = useAuth();
@@ -90,7 +90,7 @@ export default function Clients() {
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Tambah Client</Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-border">
+          <DialogContent className="bg-card border-border max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Client Baru</DialogTitle></DialogHeader>
             <ClientForm onSubmit={(data) => createClient.mutate(data)} loading={createClient.isPending} />
           </DialogContent>
@@ -121,6 +121,7 @@ export default function Clients() {
               <TableHead>Perusahaan</TableHead>
               <TableHead>Industri</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Sumber</TableHead>
               <TableHead>Kota</TableHead>
               <TableHead>Email</TableHead>
               <TableHead className="w-16">Aksi</TableHead>
@@ -128,9 +129,9 @@ export default function Clients() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Memuat...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Memuat...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Tidak ada client ditemukan.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Tidak ada client ditemukan.</TableCell></TableRow>
             ) : (
               filtered.map(client => (
                 <TableRow key={client.id} className="cursor-pointer hover:bg-muted/50">
@@ -142,6 +143,16 @@ export default function Clients() {
                   <TableCell className="text-muted-foreground">{client.industry || '-'}</TableCell>
                   <TableCell>
                     <Badge className={`border-transparent ${clientStatusPillClass(client.status)}`}>{STATUS_LABELS[client.status] || 'Aktif'}</Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {client.lead_source ? (
+                      <>
+                        {LEAD_SOURCE_LABELS[client.lead_source]}
+                        {client.lead_source_detail && (
+                          <span className="block text-xs">{client.lead_source_detail}</span>
+                        )}
+                      </>
+                    ) : '-'}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{client.city || '-'}</TableCell>
                   <TableCell className="text-muted-foreground">{client.email || '-'}</TableCell>
@@ -158,7 +169,7 @@ export default function Clients() {
       </div>
 
       <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) setEditingClient(null); }}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="bg-card border-border max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Client</DialogTitle></DialogHeader>
           {editingClient && (
             <ClientForm
@@ -182,26 +193,55 @@ function ClientForm({ onSubmit, loading, initialData, isEdit }: {
 }) {
   const [form, setForm] = useState({
     company_name: initialData?.company_name || '',
-    contact_name: initialData?.contact_name || '',
     industry: initialData?.industry || '',
+    lead_source: initialData?.lead_source || '',
+    lead_source_detail: initialData?.lead_source_detail || '',
     status: (initialData?.status || 'prospect') as string,
     city: initialData?.city || '',
     country: initialData?.country || '',
     email: initialData?.email || '',
     phone: initialData?.phone || '',
     address: initialData?.address || '',
+    website: initialData?.website || '',
+    notes: initialData?.notes || '',
   });
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
+  // lead_source is an enum column, so an unset dropdown has to go in as null.
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...form,
+      lead_source: form.lead_source || null,
+      lead_source_detail: form.lead_source_detail || null,
+    });
+  };
+
   return (
-    <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label>Nama Perusahaan</Label>
         <Input value={form.company_name} onChange={e => set('company_name', e.target.value)} required />
       </div>
-      <div className="space-y-2">
-        <Label>Nama Kontak</Label>
-        <Input value={form.contact_name} onChange={e => set('contact_name', e.target.value)} />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Sumber Lead</Label>
+          <Select value={form.lead_source} onValueChange={v => set('lead_source', v)}>
+            <SelectTrigger><SelectValue placeholder="Pilih sumber" /></SelectTrigger>
+            <SelectContent>
+              {LEAD_SOURCES.map(s => <SelectItem key={s} value={s}>{LEAD_SOURCE_LABELS[s]}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Detail Sumber</Label>
+          <Input
+            value={form.lead_source_detail}
+            onChange={e => set('lead_source_detail', e.target.value)}
+            placeholder={LEAD_SOURCE_DETAIL_HINT[form.lead_source] || 'Pilih sumber dulu'}
+            disabled={!form.lead_source}
+          />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
@@ -244,6 +284,19 @@ function ClientForm({ onSubmit, loading, initialData, isEdit }: {
           <Label>Telepon</Label>
           <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Website</Label>
+        <Input value={form.website} onChange={e => set('website', e.target.value)} placeholder="https://" />
+      </div>
+      <div className="space-y-2">
+        <Label>Catatan</Label>
+        <Textarea
+          value={form.notes}
+          onChange={e => set('notes', e.target.value)}
+          rows={4}
+          placeholder="Konteks yang tidak muat di kolom lain: cara masuk, siapa pengambil keputusan, preferensi, hal yang perlu diingat."
+        />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {isEdit
